@@ -1,0 +1,32 @@
+{
+  "name": "gemma-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prestart": "bash scripts/bootstrap-python.sh",
+    "start": "node src/server.js",
+    "predev": "bash scripts/bootstrap-python.sh",
+    "dev": "nodemon src/server.js",
+    "py:install": "bash scripts/bootstrap-python.sh",
+    "py:start": "bash -lc 'HF_TOKEN=\"$HF_TOKEN\" bash python_service/run.sh'",
+    "start:all": "bash -lc 'HF_TOKEN=\"$HF_TOKEN\" python3 -m uvicorn python_service.app:app --host 0.0.0.0 --port 8000 & nodemon src/server.js'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "axios": "^1.7.7",
+    "multer": "^2.0.2",
+    "openai": "^6.6.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
