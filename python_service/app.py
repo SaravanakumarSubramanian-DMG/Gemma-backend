@@ -131,7 +131,7 @@ class GemmaScorer:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         auth = HF_TOKEN if HF_TOKEN else None
         self.processor = AutoProcessor.from_pretrained(MODEL_ID, token=auth)
-        # When using accelerate device_map, do not call .to(self.device) afterwards.
+        # We still move input tensors to self.device for performance and to avoid warnings.
         self._use_device_map = self.device == "cuda"
         self.model = Gemma3nForConditionalGeneration.from_pretrained(
             MODEL_ID,
@@ -156,6 +156,7 @@ class GemmaScorer:
                 ],
             },
         ]
+        t0 = time.perf_counter()
         inputs = self.processor.apply_chat_template(
             messages,
             add_generation_prompt=True,
@@ -163,16 +164,15 @@ class GemmaScorer:
             return_dict=True,
             return_tensors="pt",
         )
-        if not self._use_device_map:
-            inputs = inputs.to(self.device)
+        inputs = inputs.to(self.device)
         if "pixel_values" not in inputs:
-            img_inputs = self.processor(images=pil_img, return_tensors="pt")
-            if not self._use_device_map:
-                img_inputs = img_inputs.to(self.device)
+            img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
-        generated = self.model.generate(**inputs, max_new_tokens=64, do_sample=False)
+        generated = self.model.generate(**inputs, max_new_tokens=48, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True).strip()
+        dur_ms = int((time.perf_counter() - t0) * 1000)
+        logging.info(f"PY GEN_DESCRIBE dur_ms={dur_ms}")
         return out
 
     @torch.no_grad()
@@ -210,6 +210,7 @@ class GemmaScorer:
             "Answer with only a number."
         )
 
+        t0 = time.perf_counter()
         messages = [
             {"role": "system", "content": [{"type": "text", "text": prompt_instruction}]},
             {
@@ -227,13 +228,9 @@ class GemmaScorer:
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
-        )
-        if not self._use_device_map:
-            inputs = inputs.to(self.device)
+        ).to(self.device)
         if "pixel_values" not in inputs:
-            img_inputs = self.processor(images=pil_img, return_tensors="pt")
-            if not self._use_device_map:
-                img_inputs = img_inputs.to(self.device)
+            img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=6, do_sample=False)
@@ -241,6 +238,8 @@ class GemmaScorer:
         import re
         m = re.search(r"(\d{1,3})", out)
         val = float(m.group(1)) if m else 0.0
+        dur_ms = int((time.perf_counter() - t0) * 1000)
+        logging.info(f"PY GEN_SCORE dur_ms={dur_ms}")
         return max(0.0, min(100.0, val))
 
     @torch.no_grad()
@@ -260,18 +259,15 @@ class GemmaScorer:
                 ],
             },
         ]
+        t0 = time.perf_counter()
         inputs = self.processor.apply_chat_template(
             messages,
             add_generation_prompt=True,
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
-        )
-        if not self._use_device_map:
-            inputs = inputs.to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt")
-        if not self._use_device_map:
-            img_inputs = img_inputs.to(self.device)
+        ).to(self.device)
+        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt").to(self.device)
         for k, v in img_inputs.items():
             inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=5, do_sample=False)
@@ -279,6 +275,8 @@ class GemmaScorer:
         import re
         m = re.search(r"(\d{1,3})", out)
         val = float(m.group(1)) if m else 0.0
+        dur_ms = int((time.perf_counter() - t0) * 1000)
+        logging.info(f"PY GEN_IMGIMG dur_ms={dur_ms}")
         return max(0.0, min(100.0, val))
 
     @torch.no_grad()
@@ -298,21 +296,18 @@ class GemmaScorer:
                 ],
             },
         ]
+        t0 = time.perf_counter()
         inputs = self.processor.apply_chat_template(
             messages,
             add_generation_prompt=True,
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
-        )
-        if not self._use_device_map:
-            inputs = inputs.to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt")
-        if not self._use_device_map:
-            img_inputs = img_inputs.to(self.device)
+        ).to(self.device)
+        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt").to(self.device)
         for k, v in img_inputs.items():
             inputs[k] = v
-        generated = self.model.generate(**inputs, max_new_tokens=64, do_sample=False)
+        generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True)
         import re
         m = re.match(r"\s*(\d{1,3})\s*\|\s*(.*)$", out)
@@ -325,6 +320,8 @@ class GemmaScorer:
             score_val = float(m2.group(1)) if m2 else 0.0
             reason = out.strip()
         score_val = max(0.0, min(100.0, score_val))
+        dur_ms = int((time.perf_counter() - t0) * 1000)
+        logging.info(f"PY GEN_IMGIMG_EXPL dur_ms={dur_ms}")
         return score_val, reason
 
 
