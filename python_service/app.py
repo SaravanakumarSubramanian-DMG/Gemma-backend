@@ -96,12 +96,14 @@ class GemmaScorer:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         auth = HF_TOKEN if HF_TOKEN else None
         self.processor = AutoProcessor.from_pretrained(MODEL_ID, token=auth)
+        # When using accelerate device_map, do not call .to(self.device) afterwards.
+        self._use_device_map = self.device == "cuda"
         self.model = Gemma3nForConditionalGeneration.from_pretrained(
             MODEL_ID,
-            device_map="auto" if self.device == "cuda" else None,
+            device_map="auto" if self._use_device_map else None,
             torch_dtype=torch.bfloat16 if self.device == "cuda" else torch.float32,
             token=auth,
-        ).to(self.device)
+        )
 
     @torch.no_grad()
     def describe_image(self, pil_img: Image.Image) -> str:
@@ -125,9 +127,13 @@ class GemmaScorer:
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
-        ).to(self.device)
+        )
+        if not self._use_device_map:
+            inputs = inputs.to(self.device)
         if "pixel_values" not in inputs:
-            img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
+            img_inputs = self.processor(images=pil_img, return_tensors="pt")
+            if not self._use_device_map:
+                img_inputs = img_inputs.to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=64, do_sample=False)
@@ -186,9 +192,13 @@ class GemmaScorer:
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
-        ).to(self.device)
+        )
+        if not self._use_device_map:
+            inputs = inputs.to(self.device)
         if "pixel_values" not in inputs:
-            img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
+            img_inputs = self.processor(images=pil_img, return_tensors="pt")
+            if not self._use_device_map:
+                img_inputs = img_inputs.to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=6, do_sample=False)
@@ -221,8 +231,12 @@ class GemmaScorer:
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
-        ).to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt").to(self.device)
+        )
+        if not self._use_device_map:
+            inputs = inputs.to(self.device)
+        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt")
+        if not self._use_device_map:
+            img_inputs = img_inputs.to(self.device)
         for k, v in img_inputs.items():
             inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=5, do_sample=False)
@@ -255,8 +269,12 @@ class GemmaScorer:
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
-        ).to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt").to(self.device)
+        )
+        if not self._use_device_map:
+            inputs = inputs.to(self.device)
+        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt")
+        if not self._use_device_map:
+            img_inputs = img_inputs.to(self.device)
         for k, v in img_inputs.items():
             inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=64, do_sample=False)
