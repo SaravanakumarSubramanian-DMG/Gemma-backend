@@ -366,8 +366,11 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
 
     def score_group(items_list: List[Any], stage_label: str) -> List[Dict[str, Any]]:
         results: List[Dict[str, Any]] = []
-        for item in items_list:
+        for idx, item in enumerate(items_list):
             try:
+                logging.info(
+                    f"PY IMG_START stage={stage_label} idx={idx}"
+                )
                 img = _load_image_from_value(item)
                 text_relevancy = _scorer.score_image_text(
                     img,
@@ -380,7 +383,13 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                     "text_relevancy": text_relevancy,
                     "vision_summary": vision_summary,
                 })
+                logging.info(
+                    f"PY IMG_END stage={stage_label} idx={idx} text_relevancy={text_relevancy:.1f}"
+                )
             except Exception as e:
+                logging.warning(
+                    f"PY IMG_ERR stage={stage_label} idx={idx} error={e}"
+                )
                 results.append({"error": str(e)})
         return results
 
