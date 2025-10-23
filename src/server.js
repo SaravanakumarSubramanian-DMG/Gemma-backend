@@ -32,6 +32,21 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// Basic request logging middleware
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint();
+  const { method, originalUrl } = req;
+  const ip = req.ip || req.connection?.remoteAddress || '-';
+  console.log(`NODE REQ_START method=${method} path=${originalUrl} ip=${ip}`);
+  res.on('finish', () => {
+    const durMs = Number(process.hrtime.bigint() - start) / 1e6;
+    console.log(
+      `NODE REQ_END method=${method} path=${originalUrl} status=${res.statusCode} dur_ms=${durMs.toFixed(0)}`
+    );
+  });
+  next();
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
@@ -47,6 +62,12 @@ app.post(
   ]),
   async (req, res) => {
     try {
+      const beforeCount = (req.files?.before || []).length;
+      const duringCount = (req.files?.during || []).length;
+      const afterCount = (req.files?.after || []).length;
+      console.log(
+        `NODE REL_START before=${beforeCount} during=${duringCount} after=${afterCount}`
+      );
       const description = req.body.description || '';
       const summary = req.body.summary || '';
 
@@ -108,10 +129,14 @@ app.post(
         groups.after.map((x) => x.filename)
       );
 
+      console.log(
+        `NODE REL_END before=${beforeCount} during=${duringCount} after=${afterCount} status=200`
+      );
       res.json(result);
     } catch (err) {
       // Avoid leaking secrets
       const message = err?.response?.data || err?.message || 'Unknown error';
+      console.error(`NODE REL_ERR error=${(err && err.message) || err}`);
       res.status(500).json({ error: 'Failed to score relevancy', details: message });
     } finally {
       // Clean up uploaded files

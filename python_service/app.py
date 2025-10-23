@@ -4,7 +4,7 @@ import io
 from typing import List, Dict, Any
 from urllib.parse import urlparse
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from PIL import Image
 import torch
@@ -15,7 +15,42 @@ import requests
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 MODEL_ID = "google/gemma-3n-E4B-it"
 
+import time
+import logging
+
 app = FastAPI()
+
+# Basic structured logging setup
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+)
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.perf_counter()
+    client = request.client.host if request.client else "-"
+    method = request.method
+    path = request.url.path
+    content_length = request.headers.get("content-length", "0")
+    logging.info(
+        f"PY REQ_START method={method} path={path} client={client} len={content_length}"
+    )
+    try:
+        response = await call_next(request)
+        status = response.status_code
+        dur_ms = int((time.perf_counter() - start) * 1000)
+        logging.info(
+            f"PY REQ_END method={method} path={path} status={status} dur_ms={dur_ms}"
+        )
+        return response
+    except Exception as exc:
+        dur_ms = int((time.perf_counter() - start) * 1000)
+        logging.exception(
+            f"PY REQ_ERR method={method} path={path} dur_ms={dur_ms} error={exc}"
+        )
+        raise
 
 
 class ImageItem(BaseModel):
@@ -316,6 +351,18 @@ def health() -> Dict[str, Any]:
 
 @app.post("/score")
 def score(payload: ScoreRequest) -> Dict[str, Any]:
+    # Request-level summary logs (avoid logging sensitive content)
+    try:
+        before_cnt = len(payload.images.before or [])
+        during_cnt = len(payload.images.during or [])
+        after_cnt = len(payload.images.after or [])
+        desc_len = len(payload.description or "")
+        summ_len = len(payload.summary or "")
+        logging.info(
+            f"PY SCORE_START before={before_cnt} during={during_cnt} after={after_cnt} desc_len={desc_len} summ_len={summ_len}"
+        )
+    except Exception:
+        logging.info("PY SCORE_START (counts unavailable)")
 
     def score_group(items_list: List[Any], stage_label: str) -> List[Dict[str, Any]]:
         results: List[Dict[str, Any]] = []
@@ -391,6 +438,12 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
             "before_vs_after": before_vs_after_details,
         },
     }
+    try:
+        logging.info(
+            f"PY SCORE_END before={before_cnt} during={during_cnt} after={after_cnt}"
+        )
+    except Exception:
+        pass
     return response
 
 
