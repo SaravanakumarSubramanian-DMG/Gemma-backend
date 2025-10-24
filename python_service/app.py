@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from PIL import Image
+from .exif_utils import extract_exif_fields
 import torch
 from transformers import AutoProcessor, Gemma3nForConditionalGeneration
 from huggingface_hub import login as hf_login
@@ -169,6 +170,62 @@ def _load_image_from_value(val: Any) -> Image.Image:
                     return Image.open(io.BytesIO(f.read())).convert("RGB")
             # Fallback: assume base64
             return _b64_to_pil_image(s)
+
+        raise ValueError("Unsupported image value type")
+    except Exception as exc:
+        raise ValueError(f"Failed to load image: {exc}")
+
+
+def _open_image_preserve_exif(data: bytes) -> tuple[Image.Image, Dict[str, Any]]:
+    """Open image from bytes, capture EXIF before RGB conversion, return (rgb_img, exif_fields)."""
+    img = Image.open(io.BytesIO(data))
+    exif_fields = extract_exif_fields(img)
+    rgb = img.convert("RGB")
+    return rgb, exif_fields
+
+
+def _load_image_and_exif_from_value(val: Any) -> tuple[Image.Image, Dict[str, Any]]:
+    """Like _load_image_from_value, but also returns minimal EXIF fields.
+    The returned image is RGB for model consumption.
+    """
+    try:
+        if isinstance(val, dict):
+            b64 = val.get("b64")
+            url = val.get("url")
+            path = val.get("path")
+            if b64:
+                data = base64.b64decode(b64)
+                return _open_image_preserve_exif(data)
+            if url:
+                resp = requests.get(url, timeout=30)
+                resp.raise_for_status()
+                return _open_image_preserve_exif(resp.content)
+            if path:
+                with open(path, "rb") as f:
+                    return _open_image_preserve_exif(f.read())
+            raise ValueError("Unsupported image object; expected one of b64/url/path")
+
+        if isinstance(val, Image.Image):
+            # No EXIF available if already converted; best-effort extract from this instance
+            return val.convert("RGB"), extract_exif_fields(val)
+
+        if isinstance(val, str):
+            s = val.strip()
+            parsed = urlparse(s)
+            if parsed.scheme in ("http", "https"):
+                resp = requests.get(s, timeout=30)
+                resp.raise_for_status()
+                return _open_image_preserve_exif(resp.content)
+            if parsed.scheme == "file":
+                file_path = parsed.path
+                with open(file_path, "rb") as f:
+                    return _open_image_preserve_exif(f.read())
+            if os.path.exists(s):
+                with open(s, "rb") as f:
+                    return _open_image_preserve_exif(f.read())
+            # Fallback: assume base64
+            data = base64.b64decode(s)
+            return _open_image_preserve_exif(data)
 
         raise ValueError("Unsupported image value type")
     except Exception as exc:
@@ -522,7 +579,7 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                 logging.info(
                     f"PY IMG_START stage={stage_label} idx={idx}"
                 )
-                img = _load_image_from_value(item)
+                img, exif_info = _load_image_and_exif_from_value(item)
                 text_relevancy, raw_text_relevancy = _scorer.score_image_text(
                     img,
                     description=payload.description,
@@ -547,6 +604,8 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                         "verdict": analysis_verdict,
                     },
                 }
+                if exif_info:
+                    record["exif"] = exif_info
                 if vision_summary is not None:
                     record["vision_summary"] = vision_summary
                     record["_raw"] = {
@@ -586,13 +645,15 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
             )
         for a in a_iter:
             try:
-                pil_a_list.append(_load_image_from_value(a))
+                pil_img, _ = _load_image_and_exif_from_value(a)
+                pil_a_list.append(pil_img)
             except Exception:
                 pil_a_list.append(None)
         pil_b_list = []
         for b in b_iter:
             try:
-                pil_b_list.append(_load_image_from_value(b))
+                pil_img, _ = _load_image_and_exif_from_value(b)
+                pil_b_list.append(pil_img)
             except Exception:
                 pil_b_list.append(None)
         for pa in pil_a_list:
