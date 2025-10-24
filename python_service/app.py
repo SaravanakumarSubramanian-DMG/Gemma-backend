@@ -71,6 +71,10 @@ class ScoreRequest(BaseModel):
     description: str
     summary: str | None = None
     images: ImagesPayload
+    # Performance controls (optional)
+    skip_descriptions: bool | None = None
+    skip_pairwise: bool | None = None
+    limit_per_group: int | None = None
 
 
 def _b64_to_pil_image(b64_str: str) -> Image.Image:
@@ -169,7 +173,7 @@ class GemmaScorer:
             img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
-        generated = self.model.generate(**inputs, max_new_tokens=48, do_sample=False)
+        generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True).strip()
         dur_ms = int((time.perf_counter() - t0) * 1000)
         logging.info(f"PY GEN_DESCRIBE dur_ms={dur_ms}")
@@ -267,7 +271,7 @@ class GemmaScorer:
             return_dict=True,
             return_tensors="pt",
         ).to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt").to(self.device)
+        img_inputs = self.processor(images=[pil_a, pil_b], text=["", ""], return_tensors="pt").to(self.device)
         for k, v in img_inputs.items():
             inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=5, do_sample=False)
@@ -304,7 +308,7 @@ class GemmaScorer:
             return_dict=True,
             return_tensors="pt",
         ).to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], return_tensors="pt").to(self.device)
+        img_inputs = self.processor(images=[pil_a, pil_b], text=["", ""], return_tensors="pt").to(self.device)
         for k, v in img_inputs.items():
             inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
@@ -361,9 +365,17 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
     except Exception:
         logging.info("PY SCORE_START (counts unavailable)")
 
+    # Apply limits/flags
+    limit = payload.limit_per_group if (payload.limit_per_group and payload.limit_per_group > 0) else None
+    skip_desc = bool(payload.skip_descriptions)
+    skip_pairs = bool(payload.skip_pairwise)
+
     def score_group(items_list: List[Any], stage_label: str) -> List[Dict[str, Any]]:
         results: List[Dict[str, Any]] = []
-        for idx, item in enumerate(items_list):
+        sliced = items_list[:limit] if limit else items_list
+        if limit is not None and len(items_list) > limit:
+            logging.info(f"PY GROUP_LIMIT stage={stage_label} original={len(items_list)} used={len(sliced)}")
+        for idx, item in enumerate(sliced):
             try:
                 logging.info(
                     f"PY IMG_START stage={stage_label} idx={idx}"
@@ -375,11 +387,17 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                     summary=payload.summary,
                     stage=stage_label,
                 )
-                vision_summary = _scorer.describe_image(img)
-                results.append({
+                vision_summary = None
+                if not skip_desc:
+                    vision_summary = _scorer.describe_image(img)
+                else:
+                    logging.info(f"PY IMG_DESC_SKIPPED stage={stage_label} idx={idx}")
+                record: Dict[str, Any] = {
                     "text_relevancy": text_relevancy,
-                    "vision_summary": vision_summary,
-                })
+                }
+                if vision_summary is not None:
+                    record["vision_summary"] = vision_summary
+                results.append(record)
                 logging.info(
                     f"PY IMG_END stage={stage_label} idx={idx} text_relevancy={text_relevancy:.1f}"
                 )
@@ -399,14 +417,23 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
     # Image-image comparisons: compare before vs during/after for topical relevance
     def compare_pairs_detailed(a_list: List[Any], b_list: List[Any]) -> List[List[Dict[str, Any]]]:
         matrix: List[List[Dict[str, Any]]] = []
+        if skip_pairs:
+            logging.info("PY PAIRWISE_SKIPPED")
+            return matrix
         pil_a_list = []
-        for a in a_list:
+        a_iter = a_list[:limit] if limit else a_list
+        b_iter = b_list[:limit] if limit else b_list
+        if limit is not None:
+            logging.info(
+                f"PY PAIRWISE_LIMIT a_orig={len(a_list)} b_orig={len(b_list)} a_used={len(a_iter)} b_used={len(b_iter)}"
+            )
+        for a in a_iter:
             try:
                 pil_a_list.append(_load_image_from_value(a))
             except Exception:
                 pil_a_list.append(None)
         pil_b_list = []
-        for b in b_list:
+        for b in b_iter:
             try:
                 pil_b_list.append(_load_image_from_value(b))
             except Exception:
