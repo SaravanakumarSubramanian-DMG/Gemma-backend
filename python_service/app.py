@@ -117,6 +117,9 @@ class ScoreRequest(BaseModel):
     skip_descriptions: bool | None = None
     skip_pairwise: bool | None = None
     limit_per_group: int | None = None
+    # Prompt controls (optional)
+    # When true, the technician summary is ignored by the model prompts
+    skip_summary: bool | None = None
 
 
 def _b64_to_pil_image(b64_str: str) -> Image.Image:
@@ -190,7 +193,7 @@ class GemmaScorer:
     def describe_image(self, pil_img: Image.Image) -> tuple[str, str]:
         instruction = (
             "You are a vision system. Describe concisely what is visibly present in the photo "
-            "(objects, scene, any work context). One short sentence, <= 25 words."
+            "(objects, scene, any work context). One short sentence, <= 50 words."
         )
         messages = [
             {"role": "system", "content": [{"type": "text", "text": instruction}]},
@@ -232,13 +235,26 @@ class GemmaScorer:
     ) -> tuple[float, str]:
         stage_label = (stage or "unspecified").lower()
         # Comprehensive, stage-aware evaluation rubric
+        refer_summary = bool(summary and str(summary).strip())
         prompt_instruction = (
             "You are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. "
-            "Score how well the photo documents the specified stage of the job in relation to the provided "
-            "job description and scope, and the technician's completion summary.\n\n"
+        )
+        if refer_summary:
+            prompt_instruction += (
+                "Score how well the photo documents the specified stage of the job in relation to the provided "
+                "job description and scope, and the technician's completion summary.\n\n"
+            )
+        else:
+            prompt_instruction += (
+                "Score how well the photo documents the specified stage of the job in relation to the provided "
+                "job description and scope only.\n\n"
+            )
+        prompt_instruction += (
             "General guidance:\n"
             "- Base your decision ONLY on visual evidence in the photo.\n"
-            "- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n"
+            "- Use the job description/scope"
+            + (" and technician summary" if refer_summary else "")
+            + " only as reference criteria; do not hallucinate missing details.\n"
             "- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\n"
             "Stage-specific expectations:\n"
             "- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n"
@@ -249,11 +265,17 @@ class GemmaScorer:
             "Return ONLY the integer score. No words or units."
         )
 
+        summary_block = f"Technician Job Summary:\n{summary}\n\n" if refer_summary else ""
+        tail_compare_clause = (
+            "with respect to the job description/scope and the technician summary.\n"
+            if refer_summary
+            else "with respect to the job description and scope.\n"
+        )
         user_text = (
             f"Stage: {stage_label}\n"
             f"Job Description and Scope:\n{description}\n\n"
-            f"Technician Job Summary:\n{summary if summary else 'N/A'}\n\n"
-            "Score this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\n"
+            f"{summary_block}"
+            f"Score this image for how well it documents the specified stage {tail_compare_clause}"
             "Answer with only a number."
         )
 
@@ -301,16 +323,30 @@ class GemmaScorer:
         Returns (cleaned_explanation, verdict, raw_output).
         """
         stage_label = (stage or "unspecified").lower()
-        instruction = (
-            "You are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. "
-            "Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. "
-            "Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>."
+        refer_summary = bool(summary and str(summary).strip())
+        if refer_summary:
+            instruction = (
+                "You are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. "
+                "Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. "
+                "Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>."
+            )
+        else:
+            instruction = (
+                "You are assessing how well a photo aligns with a maintenance job's description/scope for a specific stage. "
+                "Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. "
+                "Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>."
+            )
+        summary_block = f"Technician Job Summary:\n{summary}\n\n" if refer_summary else ""
+        tail_compare_clause = (
+            "relative to the job description and summary."
+            if refer_summary
+            else "relative to the job description/scope."
         )
         user_text = (
             f"Stage: {stage_label}\n"
             f"Job Description and Scope:\n{description}\n\n"
-            f"Technician Job Summary:\n{summary if summary else 'N/A'}\n\n"
-            "Explain whether this image documents the specified stage relative to the job description and summary."
+            f"{summary_block}"
+            f"Explain whether this image documents the specified stage {tail_compare_clause}"
         )
         messages = [
             {"role": "system", "content": [{"type": "text", "text": instruction}]},
@@ -472,6 +508,9 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
     limit = payload.limit_per_group if (payload.limit_per_group and payload.limit_per_group > 0) else None
     skip_desc = bool(payload.skip_descriptions)
     skip_pairs = bool(payload.skip_pairwise)
+    # Determine whether to use the technician summary in prompts
+    use_summary_flag = not bool(payload.skip_summary)
+    effective_summary = payload.summary if use_summary_flag else None
 
     def score_group(items_list: List[Any], stage_label: str) -> List[Dict[str, Any]]:
         results: List[Dict[str, Any]] = []
@@ -487,7 +526,7 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                 text_relevancy, raw_text_relevancy = _scorer.score_image_text(
                     img,
                     description=payload.description,
-                    summary=payload.summary,
+                    summary=effective_summary,
                     stage=stage_label,
                 )
                 vision_summary = None
@@ -498,7 +537,7 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                 analysis_expl, analysis_verdict, analysis_raw = _scorer.analyze_image_text(
                     img,
                     description=payload.description,
-                    summary=payload.summary,
+                    summary=effective_summary,
                     stage=stage_label,
                 )
                 record: Dict[str, Any] = {
