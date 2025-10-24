@@ -12,6 +12,7 @@ import torch
 from transformers import AutoProcessor, Gemma3nForConditionalGeneration
 from huggingface_hub import login as hf_login
 import requests
+import json
 
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 MODEL_ID = "google/gemma-3n-E4B-it"
@@ -624,6 +625,10 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
         },
         "model_analysis": model_analysis,
     }
+    try:
+        logging.info("PY SCORE_RESPONSE %s", json.dumps(response, ensure_ascii=False))
+    except Exception as e:
+        logging.warning("PY SCORE_RESPONSE_ERR %s", e)
     try:
         logging.info(
             f"PY SCORE_END before={before_cnt} during={during_cnt} after={after_cnt}"
