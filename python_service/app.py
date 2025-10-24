@@ -46,6 +46,28 @@ def _clean_chat_output(text: str) -> str:
         s = s.split("\n", 1)[-1]
     return s.strip()
 
+def _combine_images_side_by_side(pil_a: Image.Image, pil_b: Image.Image) -> Image.Image:
+    """Create a single image by placing A and B side-by-side with matched heights.
+    Maintains aspect ratio for both, pads to white background if needed.
+    """
+    # Normalize to RGB
+    a = pil_a.convert("RGB")
+    b = pil_b.convert("RGB")
+    # Match heights
+    target_height = max(a.height, b.height)
+    def resize_to_height(img: Image.Image, h: int) -> Image.Image:
+        if img.height == h:
+            return img
+        w = int(round(img.width * (h / img.height)))
+        return img.resize((w, h))
+    a_resized = resize_to_height(a, target_height)
+    b_resized = resize_to_height(b, target_height)
+    total_width = a_resized.width + b_resized.width
+    canvas = Image.new("RGB", (total_width, target_height), color=(255, 255, 255))
+    canvas.paste(a_resized, (0, 0))
+    canvas.paste(b_resized, (a_resized.width, 0))
+    return canvas
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start = time.perf_counter()
@@ -267,18 +289,76 @@ class GemmaScorer:
         return max(0.0, min(100.0, val)), out
 
     @torch.no_grad()
-    def score_image_image(self, pil_a: Image.Image, pil_b: Image.Image) -> float:
+    def analyze_image_text(
+        self,
+        pil_img: Image.Image,
+        description: str,
+        summary: str | None = None,
+        stage: str | None = None,
+    ) -> tuple[str, str, str]:
+        """Explain whether the image is relevant to the job description and summary for the stage.
+        Returns (cleaned_explanation, verdict, raw_output).
+        """
+        stage_label = (stage or "unspecified").lower()
         instruction = (
-            "Rate the visual similarity between the two images from 0 to 100. "
-            "Return only the integer number."
+            "You are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. "
+            "Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. "
+            "Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>."
+        )
+        user_text = (
+            f"Stage: {stage_label}\n"
+            f"Job Description and Scope:\n{description}\n\n"
+            f"Technician Job Summary:\n{summary if summary else 'N/A'}\n\n"
+            "Explain whether this image documents the specified stage relative to the job description and summary."
         )
         messages = [
             {"role": "system", "content": [{"type": "text", "text": instruction}]},
             {
                 "role": "user",
                 "content": [
-                    {"type": "image", "image": pil_a},
-                    {"type": "image", "image": pil_b},
+                    {"type": "image", "image": pil_img},
+                    {"type": "text", "text": user_text},
+                ],
+            },
+        ]
+        t0 = time.perf_counter()
+        inputs = self.processor.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+        ).to(self.device)
+        if "pixel_values" not in inputs:
+            img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
+            for k, v in img_inputs.items():
+                inputs[k] = v
+        generated = self.model.generate(**inputs, max_new_tokens=96, do_sample=False)
+        raw = self.processor.decode(generated[0], skip_special_tokens=True)
+        cleaned = _clean_chat_output(raw)
+        import re
+        m = re.search(r"Verdict:\s*(Relevant|Partially|Irrelevant)", cleaned, flags=re.IGNORECASE)
+        verdict = m.group(1).capitalize() if m else ""
+        # Strip trailing verdict line from explanation
+        explanation = re.sub(r"\n?Verdict:.*$", "", cleaned, flags=re.IGNORECASE).strip()
+        dur_ms = int((time.perf_counter() - t0) * 1000)
+        logging.info(f"PY GEN_ANALYZE dur_ms={dur_ms}")
+        return explanation, verdict, raw
+
+    @torch.no_grad()
+    def score_image_image(self, pil_a: Image.Image, pil_b: Image.Image) -> float:
+        instruction = (
+            "Rate the visual similarity between the two images from 0 to 100. "
+            "Return only the integer number."
+        )
+        # Combine images into one to avoid image-token mismatch issues
+        combined = _combine_images_side_by_side(pil_a, pil_b)
+        messages = [
+            {"role": "system", "content": [{"type": "text", "text": instruction}]},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": combined},
                     {"type": "text", "text": "Answer with only a number."},
                 ],
             },
@@ -291,9 +371,10 @@ class GemmaScorer:
             return_dict=True,
             return_tensors="pt",
         ).to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], text="", return_tensors="pt").to(self.device)
-        for k, v in img_inputs.items():
-            inputs[k] = v
+        if "pixel_values" not in inputs:
+            img_inputs = self.processor(images=combined, return_tensors="pt").to(self.device)
+            for k, v in img_inputs.items():
+                inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=5, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True)
         import re
@@ -309,13 +390,13 @@ class GemmaScorer:
             "Rate the visual similarity between the two images from 0 to 100, then provide a brief reason. "
             "Return strictly in the format: <number>|<short reason>."
         )
+        combined = _combine_images_side_by_side(pil_a, pil_b)
         messages = [
             {"role": "system", "content": [{"type": "text", "text": instruction}]},
             {
                 "role": "user",
                 "content": [
-                    {"type": "image", "image": pil_a},
-                    {"type": "image", "image": pil_b},
+                    {"type": "image", "image": combined},
                     {"type": "text", "text": "Respond like: 78|Both show the same meter from slightly different angles."},
                 ],
             },
@@ -328,9 +409,10 @@ class GemmaScorer:
             return_dict=True,
             return_tensors="pt",
         ).to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], text="", return_tensors="pt").to(self.device)
-        for k, v in img_inputs.items():
-            inputs[k] = v
+        if "pixel_values" not in inputs:
+            img_inputs = self.processor(images=combined, return_tensors="pt").to(self.device)
+            for k, v in img_inputs.items():
+                inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True)
         import re
@@ -412,14 +494,25 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                     vision_summary, raw_vision_summary = _scorer.describe_image(img)
                 else:
                     logging.info(f"PY IMG_DESC_SKIPPED stage={stage_label} idx={idx}")
+                analysis_expl, analysis_verdict, analysis_raw = _scorer.analyze_image_text(
+                    img,
+                    description=payload.description,
+                    summary=payload.summary,
+                    stage=stage_label,
+                )
                 record: Dict[str, Any] = {
                     "text_relevancy": text_relevancy,
+                    "analysis": {
+                        "explanation": analysis_expl,
+                        "verdict": analysis_verdict,
+                    },
                 }
                 if vision_summary is not None:
                     record["vision_summary"] = vision_summary
                     record["_raw"] = {
                         "text_relevancy": raw_text_relevancy,
                         "vision_summary": raw_vision_summary,
+                        "analysis": analysis_raw,
                     }
                 results.append(record)
                 logging.info(
