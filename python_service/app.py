@@ -2,6 +2,7 @@ import os
 import base64
 import io
 from typing import List, Dict, Any
+import math
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, Request
@@ -26,6 +27,24 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(message)s",
 )
 
+
+def _clean_chat_output(text: str) -> str:
+    """Remove chat role markers and prompts from decoded outputs.
+    Keeps only the final assistant/model message content.
+    """
+    if not text:
+        return text
+    s = text
+    # Prefer the last occurrence of a known assistant/model marker
+    for marker in ["\nmodel\n", "model\n", "\nassistant\n", "assistant\n"]:
+        idx = s.rfind(marker)
+        if idx != -1:
+            s = s[idx + len(marker) :]
+            break
+    # Drop possible leading role headers like 'user' leaked in output
+    if s.startswith("user\n"):
+        s = s.split("\n", 1)[-1]
+    return s.strip()
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -145,7 +164,7 @@ class GemmaScorer:
         )
 
     @torch.no_grad()
-    def describe_image(self, pil_img: Image.Image) -> str:
+    def describe_image(self, pil_img: Image.Image) -> tuple[str, str]:
         instruction = (
             "You are a vision system. Describe concisely what is visibly present in the photo "
             "(objects, scene, any work context). One short sentence, <= 25 words."
@@ -174,10 +193,11 @@ class GemmaScorer:
             for k, v in img_inputs.items():
                 inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
-        out = self.processor.decode(generated[0], skip_special_tokens=True).strip()
+        raw = self.processor.decode(generated[0], skip_special_tokens=True).strip()
+        out = _clean_chat_output(raw)
         dur_ms = int((time.perf_counter() - t0) * 1000)
         logging.info(f"PY GEN_DESCRIBE dur_ms={dur_ms}")
-        return out
+        return out, raw
 
     @torch.no_grad()
     def score_image_text(
@@ -186,7 +206,7 @@ class GemmaScorer:
         description: str,
         summary: str | None = None,
         stage: str | None = None,
-    ) -> float:
+    ) -> tuple[float, str]:
         stage_label = (stage or "unspecified").lower()
         # Comprehensive, stage-aware evaluation rubric
         prompt_instruction = (
@@ -240,11 +260,11 @@ class GemmaScorer:
         generated = self.model.generate(**inputs, max_new_tokens=6, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True)
         import re
-        m = re.search(r"(\d{1,3})", out)
-        val = float(m.group(1)) if m else 0.0
+        nums = re.findall(r"(\d{1,3})", out)
+        val = float(nums[-1]) if nums else 0.0
         dur_ms = int((time.perf_counter() - t0) * 1000)
         logging.info(f"PY GEN_SCORE dur_ms={dur_ms}")
-        return max(0.0, min(100.0, val))
+        return max(0.0, min(100.0, val)), out
 
     @torch.no_grad()
     def score_image_image(self, pil_a: Image.Image, pil_b: Image.Image) -> float:
@@ -271,20 +291,20 @@ class GemmaScorer:
             return_dict=True,
             return_tensors="pt",
         ).to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], text=["", ""], return_tensors="pt").to(self.device)
+        img_inputs = self.processor(images=[pil_a, pil_b], text="", return_tensors="pt").to(self.device)
         for k, v in img_inputs.items():
             inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=5, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True)
         import re
-        m = re.search(r"(\d{1,3})", out)
-        val = float(m.group(1)) if m else 0.0
+        nums = re.findall(r"(\d{1,3})", out)
+        val = float(nums[-1]) if nums else 0.0
         dur_ms = int((time.perf_counter() - t0) * 1000)
         logging.info(f"PY GEN_IMGIMG dur_ms={dur_ms}")
         return max(0.0, min(100.0, val))
 
     @torch.no_grad()
-    def score_and_explain_image_image(self, pil_a: Image.Image, pil_b: Image.Image) -> tuple[float, str]:
+    def score_and_explain_image_image(self, pil_a: Image.Image, pil_b: Image.Image) -> tuple[float, str, str]:
         instruction = (
             "Rate the visual similarity between the two images from 0 to 100, then provide a brief reason. "
             "Return strictly in the format: <number>|<short reason>."
@@ -308,7 +328,7 @@ class GemmaScorer:
             return_dict=True,
             return_tensors="pt",
         ).to(self.device)
-        img_inputs = self.processor(images=[pil_a, pil_b], text=["", ""], return_tensors="pt").to(self.device)
+        img_inputs = self.processor(images=[pil_a, pil_b], text="", return_tensors="pt").to(self.device)
         for k, v in img_inputs.items():
             inputs[k] = v
         generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
@@ -317,16 +337,16 @@ class GemmaScorer:
         m = re.match(r"\s*(\d{1,3})\s*\|\s*(.*)$", out)
         if m:
             score_val = float(m.group(1))
-            reason = m.group(2).strip()
+            reason = _clean_chat_output(m.group(2).strip())
         else:
-            # Fallback: extract any number; treat rest as reason
-            m2 = re.search(r"(\d{1,3})", out)
-            score_val = float(m2.group(1)) if m2 else 0.0
-            reason = out.strip()
+            # Fallback: extract the last number; treat rest as reason
+            nums = re.findall(r"(\d{1,3})", out)
+            score_val = float(nums[-1]) if nums else 0.0
+            reason = _clean_chat_output(out.strip())
         score_val = max(0.0, min(100.0, score_val))
         dur_ms = int((time.perf_counter() - t0) * 1000)
         logging.info(f"PY GEN_IMGIMG_EXPL dur_ms={dur_ms}")
-        return score_val, reason
+        return score_val, reason, out
 
 
 if HF_TOKEN:
@@ -381,7 +401,7 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                     f"PY IMG_START stage={stage_label} idx={idx}"
                 )
                 img = _load_image_from_value(item)
-                text_relevancy = _scorer.score_image_text(
+                text_relevancy, raw_text_relevancy = _scorer.score_image_text(
                     img,
                     description=payload.description,
                     summary=payload.summary,
@@ -389,7 +409,7 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                 )
                 vision_summary = None
                 if not skip_desc:
-                    vision_summary = _scorer.describe_image(img)
+                    vision_summary, raw_vision_summary = _scorer.describe_image(img)
                 else:
                     logging.info(f"PY IMG_DESC_SKIPPED stage={stage_label} idx={idx}")
                 record: Dict[str, Any] = {
@@ -397,6 +417,10 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                 }
                 if vision_summary is not None:
                     record["vision_summary"] = vision_summary
+                    record["_raw"] = {
+                        "text_relevancy": raw_text_relevancy,
+                        "vision_summary": raw_vision_summary,
+                    }
                 results.append(record)
                 logging.info(
                     f"PY IMG_END stage={stage_label} idx={idx} text_relevancy={text_relevancy:.1f}"
@@ -444,8 +468,8 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
                 if pa is None or pb is None:
                     row.append({"score": float("nan"), "explanation": "invalid image"})
                 else:
-                    score_val, explanation = _scorer.score_and_explain_image_image(pa, pb)
-                    row.append({"score": score_val, "explanation": explanation})
+                    score_val, explanation, raw = _scorer.score_and_explain_image_image(pa, pb)
+                    row.append({"score": score_val, "explanation": explanation, "_raw": raw})
             matrix.append(row)
         return matrix
 
@@ -459,9 +483,44 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
     before_during = just_scores(before_vs_during_details)
     before_after = just_scores(before_vs_after_details)
 
+    # Aggregate relevancy summaries
+    def summarize_scores(items: List[Dict[str, Any]]) -> Dict[str, Any]:
+        vals = [x.get("text_relevancy") for x in items if isinstance(x.get("text_relevancy"), (int, float))]
+        if not vals:
+            return {"count": 0, "mean": float("nan")}
+        return {"count": len(vals), "mean": float(sum(vals) / len(vals))}
+
+    relevancy_summary = {
+        "before": summarize_scores(groups["before"]),
+        "during": summarize_scores(groups["during"]),
+        "after": summarize_scores(groups["after"]),
+    }
+    # overall mean across all groups
+    all_vals = []
+    for g in ("before", "during", "after"):
+        all_vals.extend([x.get("text_relevancy") for x in groups[g] if isinstance(x.get("text_relevancy"), (int, float))])
+    overall_mean = float(sum(all_vals) / len(all_vals)) if all_vals else float("nan")
+
+    # Build model_analysis object mirroring groups and pairwise with raw outputs
+    model_analysis = {
+        "groups": groups,
+        "pairwise": {
+            "before_vs_during": before_vs_during_details,
+            "before_vs_after": before_vs_after_details,
+        },
+    }
+
     response: Dict[str, Any] = {
         "model": _active_vlm_label,
+        "job": {
+            "description": payload.description,
+            "summary": payload.summary,
+        },
         "groups": groups,
+        "relevancy_summary": {
+            "per_group": relevancy_summary,
+            "overall_mean": overall_mean,
+        },
         "image_pair_similarity": {
             "before_vs_during": before_during,
             "before_vs_after": before_after,
@@ -470,6 +529,7 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
             "before_vs_during": before_vs_during_details,
             "before_vs_after": before_vs_after_details,
         },
+        "model_analysis": model_analysis,
     }
     try:
         logging.info(
