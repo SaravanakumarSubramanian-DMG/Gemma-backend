@@ -10,6 +10,13 @@ from pydantic import BaseModel
 from PIL import Image
 from .exif_utils import extract_exif_fields
 import torch
+# Force eager execution by default; avoid TorchDynamo compilation paths
+try:
+    import torch._dynamo as _dynamo
+    _dynamo.config.suppress_errors = True
+    _dynamo.disable()
+except Exception:
+    pass
 from transformers import AutoProcessor, Gemma3nForConditionalGeneration
 from huggingface_hub import login as hf_login
 import requests
@@ -275,7 +282,12 @@ class GemmaScorer:
             img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
-        generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
+        try:
+            import torch._dynamo as _dynamo
+            with _dynamo.disable():
+                generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
+        except Exception:
+            generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
         raw = self.processor.decode(generated[0], skip_special_tokens=True).strip()
         out = _clean_chat_output(raw)
         dur_ms = int((time.perf_counter() - t0) * 1000)
@@ -359,7 +371,12 @@ class GemmaScorer:
             img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
-        generated = self.model.generate(**inputs, max_new_tokens=6, do_sample=False)
+        try:
+            import torch._dynamo as _dynamo
+            with _dynamo.disable():
+                generated = self.model.generate(**inputs, max_new_tokens=6, do_sample=False)
+        except Exception:
+            generated = self.model.generate(**inputs, max_new_tokens=6, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True)
         import re
         nums = re.findall(r"(\d{1,3})", out)
@@ -427,7 +444,12 @@ class GemmaScorer:
             img_inputs = self.processor(images=pil_img, return_tensors="pt").to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
-        generated = self.model.generate(**inputs, max_new_tokens=96, do_sample=False)
+        try:
+            import torch._dynamo as _dynamo
+            with _dynamo.disable():
+                generated = self.model.generate(**inputs, max_new_tokens=96, do_sample=False)
+        except Exception:
+            generated = self.model.generate(**inputs, max_new_tokens=96, do_sample=False)
         raw = self.processor.decode(generated[0], skip_special_tokens=True)
         cleaned = _clean_chat_output(raw)
         import re
@@ -469,7 +491,12 @@ class GemmaScorer:
             img_inputs = self.processor(images=combined, return_tensors="pt").to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
-        generated = self.model.generate(**inputs, max_new_tokens=5, do_sample=False)
+        try:
+            import torch._dynamo as _dynamo
+            with _dynamo.disable():
+                generated = self.model.generate(**inputs, max_new_tokens=5, do_sample=False)
+        except Exception:
+            generated = self.model.generate(**inputs, max_new_tokens=5, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True)
         import re
         nums = re.findall(r"(\d{1,3})", out)
@@ -507,7 +534,12 @@ class GemmaScorer:
             img_inputs = self.processor(images=combined, return_tensors="pt").to(self.device)
             for k, v in img_inputs.items():
                 inputs[k] = v
-        generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
+        try:
+            import torch._dynamo as _dynamo
+            with _dynamo.disable():
+                generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
+        except Exception:
+            generated = self.model.generate(**inputs, max_new_tokens=24, do_sample=False)
         out = self.processor.decode(generated[0], skip_special_tokens=True)
         import re
         m = re.match(r"\s*(\d{1,3})\s*\|\s*(.*)$", out)
