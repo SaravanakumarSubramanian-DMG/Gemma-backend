@@ -6,13 +6,13 @@ uvicorn[standard]==0.32.0
 Pillow==10.4.0
 
 # PyTorch stack
-torch==2.4.1
+torch
 torchvision==0.19.1
 
 # Transformers ecosystem
-transformers==4.53.0
-accelerate==0.34.0
-huggingface-hub==0.24.7
+transformers>=4.53.0
+accelerate>=0.34.0
+huggingface-hub>=0.24.0
 safetensors==0.4.4
 sentencepiece
 protobuf
