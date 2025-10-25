@@ -40,7 +40,7 @@ logging.basicConfig(
 
 # Concurrency controls (tunable via environment variables)
 _MAX_IMAGE_CONCURRENCY = int(os.environ.get("MAX_IMAGE_CONCURRENCY", "8"))
-_MAX_CONCURRENT_GENERATIONS = int(os.environ.get("MAX_CONCURRENT_GENERATIONS", "2"))
+_MAX_CONCURRENT_GENERATIONS = int(os.environ.get("MAX_CONCURRENT_GENERATIONS", "1"))
 _gen_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_GENERATIONS)
 _task_semaphore = asyncio.Semaphore(_MAX_IMAGE_CONCURRENCY)
 
