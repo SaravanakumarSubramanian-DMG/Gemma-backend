@@ -1,0 +1,528 @@
+{
+  "model": "google/gemma-3n-E4B-it",
+  "job": {
+    "description": "Inspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.",
+    "summary": "identified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed"
+  },
+  "groups": {
+    "before": [
+      {
+        "text_relevancy": 25,
+        "analysis": {
+          "explanation": "The image shows the toilet in the restroom, which aligns with the \"before\" stage of the job description requiring inspection.",
+          "verdict": "Relevant"
+        },
+        "vision_summary": "A white toilet sits in a tiled bathroom with a toilet brush and yellow cleaning cloth nearby.",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white toilet sits in a tiled bathroom with a toilet brush and yellow cleaning cloth nearby.",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows the toilet in the restroom, which aligns with the \"before\" stage of the job description requiring inspection.\nVerdict: Relevant."
+        }
+      },
+      {
+        "text_relevancy": 25,
+        "analysis": {
+          "explanation": "The image shows the toilet tank with a gasket and screws visible, which aligns with the \"before\" stage of a repair job where the issue (defective gasket) is being addressed.",
+          "verdict": "Relevant"
+        },
+        "vision_summary": "A white, cylindrical object with a brown ring and screws is partially enclosed by cardboard, likely in a work or assembly context",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white, cylindrical object with a brown ring and screws is partially enclosed by cardboard, likely in a work or assembly context",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows the toilet tank with a gasket and screws visible, which aligns with the \"before\" stage of a repair job where the issue (defective gasket) is being addressed.\nVerdict: Relevant."
+        }
+      },
+      {
+        "text_relevancy": 25,
+        "analysis": {
+          "explanation": "The image shows a new toilet tank partially unpacked from its box, which aligns with the \"before\" stage and the special instruction to photograph all equipment and parts.",
+          "verdict": "Relevant"
+        },
+        "vision_summary": "A white, curved appliance is partially removed from a cardboard box, revealing internal components and packing materials.",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white, curved appliance is partially removed from a cardboard box, revealing internal components and packing materials.",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a new toilet tank partially unpacked from its box, which aligns with the \"before\" stage and the special instruction to photograph all equipment and parts.\nVerdict: Relevant"
+        }
+      }
+    ],
+    "during": [
+      {
+        "text_relevancy": 75,
+        "analysis": {
+          "explanation": "The image shows a technician using a tool on a flexible hose connected to a toilet, likely during the process of inspecting or repairing the leak.",
+          "verdict": "Relevant"
+        },
+        "vision_summary": "A person wearing gloves is disconnecting a flexible metal hose from a fixture in a tiled bathroom, with a yellow bag nearby.",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n75",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA person wearing gloves is disconnecting a flexible metal hose from a fixture in a tiled bathroom, with a yellow bag nearby.",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a technician using a tool on a flexible hose connected to a toilet, likely during the process of inspecting or repairing the leak.\nVerdict: Relevant."
+        }
+      },
+      {
+        "text_relevancy": 75,
+        "analysis": {
+          "explanation": "The image shows a close-up of the toilet tank with a gasket and screws visible, likely documenting the replacement of a defective gasket as per the technician's summary.",
+          "verdict": "Relevant"
+        },
+        "vision_summary": "A white object with black rubber seals and screws is attached to a tiled wall, likely part of a plumbing or appliance installation",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n75",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white object with black rubber seals and screws is attached to a tiled wall, likely part of a plumbing or appliance installation",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a close-up of the toilet tank with a gasket and screws visible, likely documenting the replacement of a defective gasket as per the technician's summary.\nVerdict: Relevant."
+        }
+      },
+      {
+        "text_relevancy": 25,
+        "analysis": {
+          "explanation": "The photo shows a sign indicating restroom cleaning, which is not directly related to inspecting or repairing a toilet leak.",
+          "verdict": "Irrelevant"
+        },
+        "vision_summary": "A sign reading \"Cleaning the restrooms at this time. Please do not enter. Sorry for the inconvenience.\" is posted on",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA sign reading \"Cleaning the restrooms at this time. Please do not enter. Sorry for the inconvenience.\" is posted on",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe photo shows a sign indicating restroom cleaning, which is not directly related to inspecting or repairing a toilet leak.\nVerdict: Irrelevant."
+        }
+      }
+    ],
+    "after": [
+      {
+        "text_relevancy": 75,
+        "analysis": {
+          "explanation": "The image shows a toilet in a restroom, which aligns with the job description to inspect the women's restroom toilet. The toilet appears to be in a completed state, consistent with the \"after\" stage and the technician's summary of leak repair.",
+          "verdict": "Relevant"
+        },
+        "vision_summary": "A white toilet with a closed lid is situated in a tiled bathroom with a cleaning bucket and mop nearby.",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n75",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white toilet with a closed lid is situated in a tiled bathroom with a cleaning bucket and mop nearby.",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a toilet in a restroom, which aligns with the job description to inspect the women's restroom toilet. The toilet appears to be in a completed state, consistent with the \"after\" stage and the technician's summary of leak repair.\nVerdict: Relevant."
+        }
+      },
+      {
+        "text_relevancy": 25,
+        "analysis": {
+          "explanation": "The photo shows a completed work completion sign-off sheet with details of the repair, including the issue identified (defective gasket) and the action taken (replaced).",
+          "verdict": "Relevant"
+        },
+        "vision_summary": "A work completion sign-off sheet details plumbing repairs at a store, including replacing a pressure assist tank and supply line.",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA work completion sign-off sheet details plumbing repairs at a store, including replacing a pressure assist tank and supply line.",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe photo shows a completed work completion sign-off sheet with details of the repair, including the issue identified (defective gasket) and the action taken (replaced).\nVerdict: Relevant."
+        }
+      },
+      {
+        "text_relevancy": 75,
+        "analysis": {
+          "explanation": "The image shows a toilet with a toilet brush present, indicating the restroom has been addressed after the repair work.",
+          "verdict": "Relevant"
+        },
+        "vision_summary": "A white toilet with a closed lid and a toilet brush stand are visible in a tiled bathroom setting.",
+        "_raw": {
+          "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n75",
+          "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white toilet with a closed lid and a toilet brush stand are visible in a tiled bathroom setting.",
+          "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a toilet with a toilet brush present, indicating the restroom has been addressed after the repair work.\nVerdict: Relevant."
+        }
+      }
+    ]
+  },
+  "relevancy_summary": {
+    "per_group": {
+      "before": {
+        "count": 3,
+        "mean": 25
+      },
+      "during": {
+        "count": 3,
+        "mean": 58.333333333333336
+      },
+      "after": {
+        "count": 3,
+        "mean": 58.333333333333336
+      }
+    },
+    "overall_mean": 47.22222222222222
+  },
+  "image_pair_similarity": {
+    "before_vs_during": [
+      [
+        95,
+        95,
+        10
+      ],
+      [
+        95,
+        95,
+        75
+      ],
+      [
+        75,
+        95,
+        10
+      ]
+    ],
+    "before_vs_after": [
+      [
+        95,
+        95,
+        95
+      ],
+      [
+        75,
+        75,
+        95
+      ],
+      [
+        95,
+        75,
+        95
+      ]
+    ]
+  },
+  "image_pair_similarity_detailed": {
+    "before_vs_during": [
+      [
+        {
+          "score": 95,
+          "explanation": "95|Both images depict the same toilet and surrounding bathroom area, captured from slightly different perspectives.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet and surrounding bathroom area, captured from slightly different perspectives."
+        },
+        {
+          "score": 95,
+          "explanation": "95|Both images show the same toilet and surrounding bathroom tiles, just from slightly different perspectives.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same toilet and surrounding bathroom tiles, just from slightly different perspectives."
+        },
+        {
+          "score": 10,
+          "explanation": "10|Both images depict a bathroom setting, one showing a toilet and the other a notice on a wall.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n10|Both images depict a bathroom setting, one showing a toilet and the other a notice on a wall."
+        }
+      ],
+      [
+        {
+          "score": 95,
+          "explanation": "95|Both images show the same toilet tank and surrounding plumbing, just from slightly different perspectives.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same toilet tank and surrounding plumbing, just from slightly different perspectives."
+        },
+        {
+          "score": 95,
+          "explanation": "95|Both images show the same bathroom scale, viewed from slightly different angles.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same bathroom scale, viewed from slightly different angles."
+        },
+        {
+          "score": 75,
+          "explanation": "75|Both images show a close-up of the same electrical meter, albeit from different perspectives.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images show a close-up of the same electrical meter, albeit from different perspectives."
+        }
+      ],
+      [
+        {
+          "score": 75,
+          "explanation": "75|Both images depict a white water meter, one in a cardboard box and the other installed on a tiled wall",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images depict a white water meter, one in a cardboard box and the other installed on a tiled wall"
+        },
+        {
+          "score": 95,
+          "explanation": "95|Both images show the same white meter with a black circular component, viewed from slightly different angles.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same white meter with a black circular component, viewed from slightly different angles."
+        },
+        {
+          "score": 10,
+          "explanation": "10|Both images show a close-up of a utility access panel, likely for a water meter, with a",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n10|Both images show a close-up of a utility access panel, likely for a water meter, with a"
+        }
+      ]
+    ],
+    "before_vs_after": [
+      [
+        {
+          "score": 95,
+          "explanation": "95|Both images depict the exact same urinal and surrounding bathroom tiles, just from a slightly different perspective.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the exact same urinal and surrounding bathroom tiles, just from a slightly different perspective."
+        },
+        {
+          "score": 95,
+          "explanation": "95|Both images show the same toilet and surrounding bathroom area, just from slightly different perspectives.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same toilet and surrounding bathroom area, just from slightly different perspectives."
+        },
+        {
+          "score": 95,
+          "explanation": "95|Both images depict the same toilet and surrounding bathroom fixtures from a very similar perspective.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet and surrounding bathroom fixtures from a very similar perspective."
+        }
+      ],
+      [
+        {
+          "score": 75,
+          "explanation": "75|Both images depict the same toilet, one in its packaging and the other installed in a bathroom.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images depict the same toilet, one in its packaging and the other installed in a bathroom."
+        },
+        {
+          "score": 75,
+          "explanation": "75|Both images show the same water meter, one from a slightly higher angle and the other closer to the base",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images show the same water meter, one from a slightly higher angle and the other closer to the base"
+        },
+        {
+          "score": 95,
+          "explanation": "95|Both images depict the same toilet meter, one in its packaging and the other installed in a bathroom.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet meter, one in its packaging and the other installed in a bathroom."
+        }
+      ],
+      [
+        {
+          "score": 95,
+          "explanation": "95|Both images depict the same toilet model, one in its packaging and the other installed in a bathroom.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet model, one in its packaging and the other installed in a bathroom."
+        },
+        {
+          "score": 75,
+          "explanation": "75|Both images show the same water meter, one partially inside its box and the other with a work order attached",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images show the same water meter, one partially inside its box and the other with a work order attached"
+        },
+        {
+          "score": 95,
+          "explanation": "95|Both images depict the same toilet model, one in its packaging and the other installed in a bathroom.",
+          "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet model, one in its packaging and the other installed in a bathroom."
+        }
+      ]
+    ]
+  },
+  "model_analysis": {
+    "groups": {
+      "before": [
+        {
+          "text_relevancy": 25,
+          "analysis": {
+            "explanation": "The image shows the toilet in the restroom, which aligns with the \"before\" stage of the job description requiring inspection.",
+            "verdict": "Relevant"
+          },
+          "vision_summary": "A white toilet sits in a tiled bathroom with a toilet brush and yellow cleaning cloth nearby.",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white toilet sits in a tiled bathroom with a toilet brush and yellow cleaning cloth nearby.",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows the toilet in the restroom, which aligns with the \"before\" stage of the job description requiring inspection.\nVerdict: Relevant."
+          }
+        },
+        {
+          "text_relevancy": 25,
+          "analysis": {
+            "explanation": "The image shows the toilet tank with a gasket and screws visible, which aligns with the \"before\" stage of a repair job where the issue (defective gasket) is being addressed.",
+            "verdict": "Relevant"
+          },
+          "vision_summary": "A white, cylindrical object with a brown ring and screws is partially enclosed by cardboard, likely in a work or assembly context",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white, cylindrical object with a brown ring and screws is partially enclosed by cardboard, likely in a work or assembly context",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows the toilet tank with a gasket and screws visible, which aligns with the \"before\" stage of a repair job where the issue (defective gasket) is being addressed.\nVerdict: Relevant."
+          }
+        },
+        {
+          "text_relevancy": 25,
+          "analysis": {
+            "explanation": "The image shows a new toilet tank partially unpacked from its box, which aligns with the \"before\" stage and the special instruction to photograph all equipment and parts.",
+            "verdict": "Relevant"
+          },
+          "vision_summary": "A white, curved appliance is partially removed from a cardboard box, revealing internal components and packing materials.",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white, curved appliance is partially removed from a cardboard box, revealing internal components and packing materials.",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: before\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a new toilet tank partially unpacked from its box, which aligns with the \"before\" stage and the special instruction to photograph all equipment and parts.\nVerdict: Relevant"
+          }
+        }
+      ],
+      "during": [
+        {
+          "text_relevancy": 75,
+          "analysis": {
+            "explanation": "The image shows a technician using a tool on a flexible hose connected to a toilet, likely during the process of inspecting or repairing the leak.",
+            "verdict": "Relevant"
+          },
+          "vision_summary": "A person wearing gloves is disconnecting a flexible metal hose from a fixture in a tiled bathroom, with a yellow bag nearby.",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n75",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA person wearing gloves is disconnecting a flexible metal hose from a fixture in a tiled bathroom, with a yellow bag nearby.",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a technician using a tool on a flexible hose connected to a toilet, likely during the process of inspecting or repairing the leak.\nVerdict: Relevant."
+          }
+        },
+        {
+          "text_relevancy": 75,
+          "analysis": {
+            "explanation": "The image shows a close-up of the toilet tank with a gasket and screws visible, likely documenting the replacement of a defective gasket as per the technician's summary.",
+            "verdict": "Relevant"
+          },
+          "vision_summary": "A white object with black rubber seals and screws is attached to a tiled wall, likely part of a plumbing or appliance installation",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n75",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white object with black rubber seals and screws is attached to a tiled wall, likely part of a plumbing or appliance installation",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a close-up of the toilet tank with a gasket and screws visible, likely documenting the replacement of a defective gasket as per the technician's summary.\nVerdict: Relevant."
+          }
+        },
+        {
+          "text_relevancy": 25,
+          "analysis": {
+            "explanation": "The photo shows a sign indicating restroom cleaning, which is not directly related to inspecting or repairing a toilet leak.",
+            "verdict": "Irrelevant"
+          },
+          "vision_summary": "A sign reading \"Cleaning the restrooms at this time. Please do not enter. Sorry for the inconvenience.\" is posted on",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA sign reading \"Cleaning the restrooms at this time. Please do not enter. Sorry for the inconvenience.\" is posted on",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: during\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe photo shows a sign indicating restroom cleaning, which is not directly related to inspecting or repairing a toilet leak.\nVerdict: Irrelevant."
+          }
+        }
+      ],
+      "after": [
+        {
+          "text_relevancy": 75,
+          "analysis": {
+            "explanation": "The image shows a toilet in a restroom, which aligns with the job description to inspect the women's restroom toilet. The toilet appears to be in a completed state, consistent with the \"after\" stage and the technician's summary of leak repair.",
+            "verdict": "Relevant"
+          },
+          "vision_summary": "A white toilet with a closed lid is situated in a tiled bathroom with a cleaning bucket and mop nearby.",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n75",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white toilet with a closed lid is situated in a tiled bathroom with a cleaning bucket and mop nearby.",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a toilet in a restroom, which aligns with the job description to inspect the women's restroom toilet. The toilet appears to be in a completed state, consistent with the \"after\" stage and the technician's summary of leak repair.\nVerdict: Relevant."
+          }
+        },
+        {
+          "text_relevancy": 25,
+          "analysis": {
+            "explanation": "The photo shows a completed work completion sign-off sheet with details of the repair, including the issue identified (defective gasket) and the action taken (replaced).",
+            "verdict": "Relevant"
+          },
+          "vision_summary": "A work completion sign-off sheet details plumbing repairs at a store, including replacing a pressure assist tank and supply line.",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n25",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA work completion sign-off sheet details plumbing repairs at a store, including replacing a pressure assist tank and supply line.",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe photo shows a completed work completion sign-off sheet with details of the repair, including the issue identified (defective gasket) and the action taken (replaced).\nVerdict: Relevant."
+          }
+        },
+        {
+          "text_relevancy": 75,
+          "analysis": {
+            "explanation": "The image shows a toilet with a toilet brush present, indicating the restroom has been addressed after the repair work.",
+            "verdict": "Relevant"
+          },
+          "vision_summary": "A white toilet with a closed lid and a toilet brush stand are visible in a tiled bathroom setting.",
+          "_raw": {
+            "text_relevancy": "user\nYou are a strict field-service photo compliance and relevancy evaluator for maintenance jobs. Score how well the photo documents the specified stage of the job in relation to the provided job description and scope, and the technician's completion summary.\n\nGeneral guidance:\n- Base your decision ONLY on visual evidence in the photo.\n- Use the job description/scope and technician summary only as reference criteria; do not hallucinate missing details.\n- If the image is unrelated, too zoomed-out/in to verify, shows people/selfies without task context, or is a blank/screenshot, score low.\n\nStage-specific expectations:\n- BEFORE: Expect clear capture of the target asset/location/problem area before work begins; identifiers, condition, surroundings. Penalize if it shows finished work.\n- DURING: Expect active work evidence (tools, parts, process steps, safety/PPE, progressive changes). Penalize if it looks fully finished or unrelated.\n- AFTER: Expect clear outcomes of completed work (repairs/installations complete, cleanliness, labeling, readings as applicable). Penalize if mid-work or broken/incomplete.\n\nScoring rubric (integer 0–100):\n0=irrelevant, 25=weak/tangential, 50=partially relevant, 75=highly relevant with minor misses, 100=perfectly relevant.\n\nReturn ONLY the integer score. No words or units.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nScore this image for how well it documents the specified stage with respect to the job description/scope and the technician summary.\nAnswer with only a number.\nmodel\n75",
+            "vision_summary": "user\nYou are a vision system. Describe concisely what is visibly present in the photo (objects, scene, any work context). One short sentence, <= 25 words.\n\n\n\n\n\nProvide a single sentence description.\nmodel\nA white toilet with a closed lid and a toilet brush stand are visible in a tiled bathroom setting.",
+            "analysis": "user\nYou are assessing how well a photo aligns with a maintenance job's description/scope and the technician's summary for a specific stage. Write 1–2 concise sentences citing visible evidence. Then add a verdict like 'Relevant', 'Partially', or 'Irrelevant'. Respond strictly in the format: <short explanation>\nVerdict: <Relevant|Partially|Irrelevant>.\n\n\n\n\n\nStage: after\nJob Description and Scope:\nInspect the women's restroom toilet to identify and repair the source of the recurring leak causing standing water at the back of the toilet. Special Instructions: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted.\n\nTechnician Job Summary:\nidentified the issue in the toilet, Defective gasket; Replaced, leaks sealed and inspected after the job is completed\n\nExplain whether this image documents the specified stage relative to the job description and summary.\nmodel\nThe image shows a toilet with a toilet brush present, indicating the restroom has been addressed after the repair work.\nVerdict: Relevant."
+          }
+        }
+      ]
+    },
+    "pairwise": {
+      "before_vs_during": [
+        [
+          {
+            "score": 95,
+            "explanation": "95|Both images depict the same toilet and surrounding bathroom area, captured from slightly different perspectives.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet and surrounding bathroom area, captured from slightly different perspectives."
+          },
+          {
+            "score": 95,
+            "explanation": "95|Both images show the same toilet and surrounding bathroom tiles, just from slightly different perspectives.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same toilet and surrounding bathroom tiles, just from slightly different perspectives."
+          },
+          {
+            "score": 10,
+            "explanation": "10|Both images depict a bathroom setting, one showing a toilet and the other a notice on a wall.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n10|Both images depict a bathroom setting, one showing a toilet and the other a notice on a wall."
+          }
+        ],
+        [
+          {
+            "score": 95,
+            "explanation": "95|Both images show the same toilet tank and surrounding plumbing, just from slightly different perspectives.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same toilet tank and surrounding plumbing, just from slightly different perspectives."
+          },
+          {
+            "score": 95,
+            "explanation": "95|Both images show the same bathroom scale, viewed from slightly different angles.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same bathroom scale, viewed from slightly different angles."
+          },
+          {
+            "score": 75,
+            "explanation": "75|Both images show a close-up of the same electrical meter, albeit from different perspectives.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images show a close-up of the same electrical meter, albeit from different perspectives."
+          }
+        ],
+        [
+          {
+            "score": 75,
+            "explanation": "75|Both images depict a white water meter, one in a cardboard box and the other installed on a tiled wall",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images depict a white water meter, one in a cardboard box and the other installed on a tiled wall"
+          },
+          {
+            "score": 95,
+            "explanation": "95|Both images show the same white meter with a black circular component, viewed from slightly different angles.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same white meter with a black circular component, viewed from slightly different angles."
+          },
+          {
+            "score": 10,
+            "explanation": "10|Both images show a close-up of a utility access panel, likely for a water meter, with a",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n10|Both images show a close-up of a utility access panel, likely for a water meter, with a"
+          }
+        ]
+      ],
+      "before_vs_after": [
+        [
+          {
+            "score": 95,
+            "explanation": "95|Both images depict the exact same urinal and surrounding bathroom tiles, just from a slightly different perspective.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the exact same urinal and surrounding bathroom tiles, just from a slightly different perspective."
+          },
+          {
+            "score": 95,
+            "explanation": "95|Both images show the same toilet and surrounding bathroom area, just from slightly different perspectives.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images show the same toilet and surrounding bathroom area, just from slightly different perspectives."
+          },
+          {
+            "score": 95,
+            "explanation": "95|Both images depict the same toilet and surrounding bathroom fixtures from a very similar perspective.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet and surrounding bathroom fixtures from a very similar perspective."
+          }
+        ],
+        [
+          {
+            "score": 75,
+            "explanation": "75|Both images depict the same toilet, one in its packaging and the other installed in a bathroom.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images depict the same toilet, one in its packaging and the other installed in a bathroom."
+          },
+          {
+            "score": 75,
+            "explanation": "75|Both images show the same water meter, one from a slightly higher angle and the other closer to the base",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images show the same water meter, one from a slightly higher angle and the other closer to the base"
+          },
+          {
+            "score": 95,
+            "explanation": "95|Both images depict the same toilet meter, one in its packaging and the other installed in a bathroom.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet meter, one in its packaging and the other installed in a bathroom."
+          }
+        ],
+        [
+          {
+            "score": 95,
+            "explanation": "95|Both images depict the same toilet model, one in its packaging and the other installed in a bathroom.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet model, one in its packaging and the other installed in a bathroom."
+          },
+          {
+            "score": 75,
+            "explanation": "75|Both images show the same water meter, one partially inside its box and the other with a work order attached",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n75|Both images show the same water meter, one partially inside its box and the other with a work order attached"
+          },
+          {
+            "score": 95,
+            "explanation": "95|Both images depict the same toilet model, one in its packaging and the other installed in a bathroom.",
+            "_raw": "user\nRate the visual similarity between the two images from 0 to 100, then provide a brief reason. Return strictly in the format: <number>|<short reason>.\n\n\n\n\n\nRespond like: 78|Both show the same meter from slightly different angles.\nmodel\n95|Both images depict the same toilet model, one in its packaging and the other installed in a bathroom."
+          }
+        ]
+      ]
+    }
+  }
+}

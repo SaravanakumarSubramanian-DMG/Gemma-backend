@@ -4,6 +4,7 @@ Job description: Inspect the women's restroom toilet to identify and repair the 
 Special Instructions:
 Other: All Equipment and Parts Must be Photographed. Labor cannot be billed under materials. Invoices cannot exceed final approved dollar amount. Shark Bite fittings are not permitted
 before Photo links: @https://objects.dmgpro.com/objects/8f507221-d9a9-488f-8722-8d9a98088f50 ,@https://objects.dmgpro.com/objects/c7b2ab63-f510-4fc7-aab6-cf510dcfc7b2 ,@https://objects.dmgpro.com/objects/e4b6ea7b-0bb7-49e4-aea7-b0bb7549e4b6 
+
 during photo links: @https://objects.dmgpro.com/objects/57602ec5-f774-4b57-82ec-0f77482b5760 ,@https://objects.dmgpro.com/objects/176467dd-2bd2-4e17-867d-62bd2e7e1764 , @https://objects.dmgpro.com/objects/e0389fe5-567a-46e0-89fe-4567a466e038 , @https://objects.dmgpro.com/objects/86946bf9-3dfd-4386-86bf-13dfd0e38694 ,
 @https://objects.dmgpro.com/photos/73990525-2455-4273-9052-c2455bc27399 
 After photo links: @https://objects.dmgpro.com/objects/59a88a9d-359b-4f59-88a9-6359b4af59a8 , @https://objects.dmgpro.com/objects/cd4d28c0-aa59-4dcd-928c-0aa5951dcd4d ,
@@ -14,7 +15,7 @@ job summary: identified the issue in the toilet, Defective gasket; Replaced, lea
 
 BASE_URL=http://127.0.0.1:8000
 
-curl -sS -X POST "$BASE_URL/score" \
+curl -sS -X POST "$BASE_URL/relevancy/score" \
   -H 'Content-Type: application/json' \
   --data-binary @- <<'JSON'
 {
@@ -38,14 +39,15 @@ curl -sS -X POST "$BASE_URL/score" \
       "https://objects.dmgpro.com/objects/cd4d28c0-aa59-4dcd-928c-0aa5951dcd4d",
       "https://objects.dmgpro.com/photos/7ac19592-6699-4a7a-9959-66699b6a7ac1"
     ]
-  }
-,
+  },
+  "skip_descriptions": false,
+  "skip_pairwise": false,
   "skip_summary": true
 }
 JSON
 
 //Relevant case
-curl -v --max-time 600 -X POST http://127.0.0.1:8000/score \
+curl -v --max-time 600 -X POST http://127.0.0.1:8080/relevancy/score \
   -H 'Content-Type: application/json' \
   --data-binary @- <<'JSON'
 {
@@ -78,7 +80,7 @@ JSON
 
 //irrelevant case
 
-curl -v --max-time 600 -X POST http://127.0.0.1:8000/score \
+curl -v --max-time 600 -X POST http://127.0.0.1:8080/relevancy/score \
   -H 'Content-Type: application/json' \
   --data-binary @- <<'JSON'
 {

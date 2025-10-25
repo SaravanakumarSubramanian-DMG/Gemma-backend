@@ -1,0 +1,40 @@
+# Merged requirements from python_service and relevancy_service
+# Conflict resolution: prefer newer or stricter versions; use correct package names
+
+fastapi==0.115.5
+uvicorn[standard]==0.32.0
+Pillow==10.4.0
+
+# PyTorch stack
+torch==2.4.1
+torchvision==0.19.1
+
+# Transformers ecosystem
+transformers==4.53.0
+accelerate==0.34.0
+huggingface-hub==0.24.7
+safetensors==0.4.4
+sentencepiece
+protobuf
+
+# Core utilities
+requests>=2.31.0
+httpx==0.27.2
+orjson==3.10.7
+
+# Numeric / imaging
+numpy==1.26.4
+opencv-python-headless==4.10.0.84
+
+# ONNX / runtimes
+onnx==1.16.1
+onnxruntime-gpu==1.19.0
+
+# Pydantic
+pydantic==2.9.2
+pydantic-settings==2.6.1
+
+# Optional converters (install if using)
+onnx2tf==1.19.9
+tensorflow==2.16.1
+# Optional: TensorRT Python must be installed from NVIDIA, not pip
