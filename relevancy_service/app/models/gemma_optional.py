@@ -27,6 +27,9 @@ class GemmaVLMScorer:
 				torch_dtype=torch.bfloat16 if self.device.type == "cuda" else torch.float32,
 				token=token,
 			)
+			# Ensure attention uses a safe implementation without optional extensions
+			if hasattr(self.model.config, "_attn_implementation"):
+				self.model.config._attn_implementation = "eager"
 		else:
 			self.model = AutoModelForVision2Seq.from_pretrained(
 				model_id,
