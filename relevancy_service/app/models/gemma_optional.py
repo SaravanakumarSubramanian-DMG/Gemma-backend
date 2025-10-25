@@ -1,4 +1,5 @@
 from typing import List, Optional
+import os
 
 import torch
 from transformers import AutoProcessor, AutoModelForVision2Seq
@@ -19,6 +20,13 @@ class GemmaVLMScorer:
 		model_id = model_name or settings.gemma_model_name
 		token = hf_token or settings.hf_token
 		self._is_gemma3n = "gemma-3n" in (model_id or "").lower() and Gemma3nForConditionalGeneration is not None
+		# Disable TorchDynamo to avoid attention interface mapping errors
+		try:
+			import torch._dynamo as dynamo
+			dynamo.config.suppress_errors = True
+			os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
+		except Exception:
+			pass
 		self.processor = AutoProcessor.from_pretrained(model_id, token=token)
 		if self._is_gemma3n:
 			self.model = Gemma3nForConditionalGeneration.from_pretrained(
@@ -27,9 +35,20 @@ class GemmaVLMScorer:
 				torch_dtype=torch.bfloat16 if self.device.type == "cuda" else torch.float32,
 				token=token,
 			)
-			# Ensure attention uses a safe implementation without optional extensions
-			if hasattr(self.model.config, "_attn_implementation"):
-				self.model.config._attn_implementation = "eager"
+			# Force a safe attention implementation; prefer SDPA, fallback to eager
+			for key in ("attn_implementation", "_attn_implementation"):
+				if hasattr(self.model.config, key):
+					setattr(self.model.config, key, "sdpa")
+			try:
+				import torch.backends.cuda as cuda_backends
+				if hasattr(cuda_backends, "enable_flash_sdp"):
+					cuda_backends.enable_flash_sdp(False)
+				if hasattr(cuda_backends, "enable_mem_efficient_sdp"):
+					cuda_backends.enable_mem_efficient_sdp(True)
+				if hasattr(cuda_backends, "enable_math_sdp"):
+					cuda_backends.enable_math_sdp(False)
+			except Exception:
+				pass
 		else:
 			self.model = AutoModelForVision2Seq.from_pretrained(
 				model_id,
