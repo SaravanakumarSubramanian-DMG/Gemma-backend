@@ -27,6 +27,7 @@ MODEL_ID = "google/gemma-3n-E4B-it"
 
 import time
 import logging
+import asyncio
 
 app = FastAPI()
 
@@ -35,6 +36,13 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
 )
+
+
+# Concurrency controls (tunable via environment variables)
+_MAX_IMAGE_CONCURRENCY = int(os.environ.get("MAX_IMAGE_CONCURRENCY", "8"))
+_MAX_CONCURRENT_GENERATIONS = int(os.environ.get("MAX_CONCURRENT_GENERATIONS", "2"))
+_gen_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_GENERATIONS)
+_task_semaphore = asyncio.Semaphore(_MAX_IMAGE_CONCURRENCY)
 
 
 def _clean_chat_output(text: str) -> str:
@@ -237,6 +245,10 @@ def _load_image_and_exif_from_value(val: Any) -> tuple[Image.Image, Dict[str, An
         raise ValueError("Unsupported image value type")
     except Exception as exc:
         raise ValueError(f"Failed to load image: {exc}")
+
+
+async def _load_image_and_exif_from_value_async(val: Any) -> tuple[Image.Image, Dict[str, Any]]:
+    return await asyncio.to_thread(_load_image_and_exif_from_value, val)
 
 
 class GemmaScorer:
@@ -569,6 +581,57 @@ _scorer = GemmaScorer()
 _active_vlm_label = MODEL_ID
 
 
+# Async wrappers to guard generations and run blocking work off the event loop
+async def _with_generate_semaphore(func, *args, **kwargs):
+    async with _gen_semaphore:
+        return await asyncio.to_thread(func, *args, **kwargs)
+
+
+async def _describe_image_async(pil_img: Image.Image) -> tuple[str, str]:
+    return await _with_generate_semaphore(_scorer.describe_image, pil_img)
+
+
+async def _score_image_text_async(
+    pil_img: Image.Image,
+    description: str,
+    summary: str | None,
+    stage: str | None,
+) -> tuple[float, str]:
+    return await _with_generate_semaphore(
+        _scorer.score_image_text,
+        pil_img,
+        description,
+        summary,
+        stage,
+    )
+
+
+async def _analyze_image_text_async(
+    pil_img: Image.Image,
+    description: str,
+    summary: str | None,
+    stage: str | None,
+) -> tuple[str, str, str]:
+    return await _with_generate_semaphore(
+        _scorer.analyze_image_text,
+        pil_img,
+        description,
+        summary,
+        stage,
+    )
+
+
+async def _score_and_explain_image_image_async(
+    pil_a: Image.Image,
+    pil_b: Image.Image,
+) -> tuple[float, str, str]:
+    return await _with_generate_semaphore(
+        _scorer.score_and_explain_image_image,
+        pil_a,
+        pil_b,
+    )
+
+
 @app.get("/health")
 def health() -> Dict[str, Any]:
     return {
@@ -579,7 +642,7 @@ def health() -> Dict[str, Any]:
 
 
 @app.post("/score")
-def score(payload: ScoreRequest) -> Dict[str, Any]:
+async def score(payload: ScoreRequest) -> Dict[str, Any]:
     # Request-level summary logs (avoid logging sensitive content)
     try:
         before_cnt = len(payload.images.before or [])
@@ -601,106 +664,133 @@ def score(payload: ScoreRequest) -> Dict[str, Any]:
     use_summary_flag = not bool(payload.skip_summary)
     effective_summary = payload.summary if use_summary_flag else None
 
-    def score_group(items_list: List[Any], stage_label: str) -> List[Dict[str, Any]]:
-        results: List[Dict[str, Any]] = []
+    async def score_group(items_list: List[Any], stage_label: str) -> List[Dict[str, Any]]:
         sliced = items_list[:limit] if limit else items_list
         if limit is not None and len(items_list) > limit:
             logging.info(f"PY GROUP_LIMIT stage={stage_label} original={len(items_list)} used={len(sliced)}")
-        for idx, item in enumerate(sliced):
-            try:
-                logging.info(
-                    f"PY IMG_START stage={stage_label} idx={idx}"
-                )
-                img, exif_info = _load_image_and_exif_from_value(item)
-                text_relevancy, raw_text_relevancy = _scorer.score_image_text(
-                    img,
-                    description=payload.description,
-                    summary=effective_summary,
-                    stage=stage_label,
-                )
-                vision_summary = None
-                if not skip_desc:
-                    vision_summary, raw_vision_summary = _scorer.describe_image(img)
-                else:
-                    logging.info(f"PY IMG_DESC_SKIPPED stage={stage_label} idx={idx}")
-                analysis_expl, analysis_verdict, analysis_raw = _scorer.analyze_image_text(
-                    img,
-                    description=payload.description,
-                    summary=effective_summary,
-                    stage=stage_label,
-                )
-                record: Dict[str, Any] = {
-                    "text_relevancy": text_relevancy,
-                    "analysis": {
-                        "explanation": analysis_expl,
-                        "verdict": analysis_verdict,
-                    },
-                }
-                if exif_info:
-                    record["exif"] = exif_info
-                if vision_summary is not None:
-                    record["vision_summary"] = vision_summary
-                    record["_raw"] = {
-                        "text_relevancy": raw_text_relevancy,
-                        "vision_summary": raw_vision_summary,
-                        "analysis": analysis_raw,
-                    }
-                results.append(record)
-                logging.info(
-                    f"PY IMG_END stage={stage_label} idx={idx} text_relevancy={text_relevancy:.1f}"
-                )
-            except Exception as e:
-                logging.warning(
-                    f"PY IMG_ERR stage={stage_label} idx={idx} error={e}"
-                )
-                results.append({"error": str(e)})
-        return results
 
+        async def process_one(idx: int, item: Any) -> Dict[str, Any]:
+            async with _task_semaphore:
+                try:
+                    logging.info(
+                        f"PY IMG_START stage={stage_label} idx={idx}"
+                    )
+                    img, exif_info = await _load_image_and_exif_from_value_async(item)
+
+                    # Schedule generation tasks concurrently, guarded by semaphore
+                    score_task = asyncio.create_task(
+                        _score_image_text_async(
+                            img,
+                            description=payload.description,
+                            summary=effective_summary,
+                            stage=stage_label,
+                        )
+                    )
+                    analysis_task = asyncio.create_task(
+                        _analyze_image_text_async(
+                            img,
+                            description=payload.description,
+                            summary=effective_summary,
+                            stage=stage_label,
+                        )
+                    )
+                    if not skip_desc:
+                        describe_task = asyncio.create_task(_describe_image_async(img))
+                    else:
+                        describe_task = None
+                        logging.info(f"PY IMG_DESC_SKIPPED stage={stage_label} idx={idx}")
+
+                    text_relevancy, raw_text_relevancy = await score_task
+                    analysis_expl, analysis_verdict, analysis_raw = await analysis_task
+                    vision_summary = None
+                    raw_vision_summary = None
+                    if describe_task is not None:
+                        vision_summary, raw_vision_summary = await describe_task
+
+                    record: Dict[str, Any] = {
+                        "text_relevancy": text_relevancy,
+                        "analysis": {
+                            "explanation": analysis_expl,
+                            "verdict": analysis_verdict,
+                        },
+                    }
+                    if exif_info:
+                        record["exif"] = exif_info
+                    if vision_summary is not None:
+                        record["vision_summary"] = vision_summary
+                        record["_raw"] = {
+                            "text_relevancy": raw_text_relevancy,
+                            "vision_summary": raw_vision_summary,
+                            "analysis": analysis_raw,
+                        }
+                    logging.info(
+                        f"PY IMG_END stage={stage_label} idx={idx} text_relevancy={text_relevancy:.1f}"
+                    )
+                    return record
+                except Exception as e:
+                    logging.warning(
+                        f"PY IMG_ERR stage={stage_label} idx={idx} error={e}"
+                    )
+                    return {"error": str(e)}
+
+        tasks = [process_one(idx, item) for idx, item in enumerate(sliced)]
+        return await asyncio.gather(*tasks)
+
+    before_res, during_res, after_res = await asyncio.gather(
+        score_group(payload.images.before, "before"),
+        score_group(payload.images.during, "during"),
+        score_group(payload.images.after, "after"),
+    )
     groups = {
-        "before": score_group(payload.images.before, "before"),
-        "during": score_group(payload.images.during, "during"),
-        "after": score_group(payload.images.after, "after"),
+        "before": list(before_res),
+        "during": list(during_res),
+        "after": list(after_res),
     }
 
     # Image-image comparisons: compare before vs during/after for topical relevance
-    def compare_pairs_detailed(a_list: List[Any], b_list: List[Any]) -> List[List[Dict[str, Any]]]:
-        matrix: List[List[Dict[str, Any]]] = []
+    async def compare_pairs_detailed(a_list: List[Any], b_list: List[Any]) -> List[List[Dict[str, Any]]]:
         if skip_pairs:
             logging.info("PY PAIRWISE_SKIPPED")
-            return matrix
-        pil_a_list = []
+            return []
         a_iter = a_list[:limit] if limit else a_list
         b_iter = b_list[:limit] if limit else b_list
         if limit is not None:
             logging.info(
                 f"PY PAIRWISE_LIMIT a_orig={len(a_list)} b_orig={len(b_list)} a_used={len(a_iter)} b_used={len(b_iter)}"
             )
-        for a in a_iter:
-            try:
-                pil_img, _ = _load_image_and_exif_from_value(a)
-                pil_a_list.append(pil_img)
-            except Exception:
-                pil_a_list.append(None)
-        pil_b_list = []
-        for b in b_iter:
-            try:
-                pil_img, _ = _load_image_and_exif_from_value(b)
-                pil_b_list.append(pil_img)
-            except Exception:
-                pil_b_list.append(None)
+
+        # Load images concurrently
+        pil_a_list = await asyncio.gather(
+            *[_load_image_and_exif_from_value_async(a) for a in a_iter],
+            return_exceptions=True,
+        )
+        pil_a_list = [v[0] if isinstance(v, tuple) else None for v in pil_a_list]
+
+        pil_b_list = await asyncio.gather(
+            *[_load_image_and_exif_from_value_async(b) for b in b_iter],
+            return_exceptions=True,
+        )
+        pil_b_list = [v[0] if isinstance(v, tuple) else None for v in pil_b_list]
+
+        async def compute_cell(pa: Image.Image, pb: Image.Image) -> Dict[str, Any]:
+            if pa is None or pb is None:
+                return {"score": float("nan"), "explanation": "invalid image"}
+            async with _task_semaphore:
+                score_val, explanation, raw = await _score_and_explain_image_image_async(pa, pb)
+                return {"score": score_val, "explanation": explanation, "_raw": raw}
+
+        # Build tasks for all pairs with bounded concurrency
+        matrix: List[List[Dict[str, Any]]] = []
         for pa in pil_a_list:
-            row: List[Dict[str, Any]] = []
-            for pb in pil_b_list:
-                if pa is None or pb is None:
-                    row.append({"score": float("nan"), "explanation": "invalid image"})
-                else:
-                    score_val, explanation, raw = _scorer.score_and_explain_image_image(pa, pb)
-                    row.append({"score": score_val, "explanation": explanation, "_raw": raw})
+            row_tasks = [compute_cell(pa, pb) for pb in pil_b_list]
+            row = await asyncio.gather(*row_tasks)
             matrix.append(row)
         return matrix
 
-    before_vs_during_details = compare_pairs_detailed(payload.images.before, payload.images.during)
-    before_vs_after_details = compare_pairs_detailed(payload.images.before, payload.images.after)
+    before_vs_during_details, before_vs_after_details = await asyncio.gather(
+        compare_pairs_detailed(payload.images.before, payload.images.during),
+        compare_pairs_detailed(payload.images.before, payload.images.after),
+    )
 
     # Derive numeric matrices for backward compatibility
     def just_scores(detail_matrix: List[List[Dict[str, Any]]]) -> List[List[float]]:
