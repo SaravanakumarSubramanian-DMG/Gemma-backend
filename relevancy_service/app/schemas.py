@@ -103,3 +103,6 @@ class ScoreResponse(BaseModel):
 	image_pair_similarity: dict
 	image_pair_similarity_detailed: dict
 	model_analysis: dict
+
+	class Config:
+		protected_namespaces = ()

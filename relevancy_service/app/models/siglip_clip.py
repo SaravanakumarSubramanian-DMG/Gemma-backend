@@ -12,11 +12,11 @@ class SiglipClipEncoder(EncoderInterface):
 	def __init__(self, model_name: str, device: str = "cuda", image_size: int = 384, hf_token: Optional[str] = None) -> None:
 		self._name = model_name
 		self.device = torch.device(device if torch.cuda.is_available() and device == "cuda" else "cpu")
-		self.processor = AutoProcessor.from_pretrained(model_name, use_auth_token=hf_token or settings.hf_token)
+		self.processor = AutoProcessor.from_pretrained(model_name, token=hf_token or settings.hf_token)
 		self.model = AutoModel.from_pretrained(
 			model_name,
 			torch_dtype=torch.float16 if self.device.type == "cuda" else torch.float32,
-			use_auth_token=hf_token or settings.hf_token,
+			token=hf_token or settings.hf_token,
 		)
 		self.model.to(self.device)
 		self.model.eval()

@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 	class Config:
 		env_prefix = ""
 		case_sensitive = False
+		protected_namespaces = ("settings_",)
 
 
 settings = Settings()
