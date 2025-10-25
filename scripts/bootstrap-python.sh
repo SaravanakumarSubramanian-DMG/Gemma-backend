@@ -21,8 +21,11 @@ source "$VENV_DIR/bin/activate"
 echo "[bootstrap] Upgrading pip"
 pip install -U pip
 
-echo "[bootstrap] Installing requirements"
-pip install -r "$PS_DIR/requirements.txt"
+echo "[bootstrap] Installing/upgrading requirements (latest compatible)"
+pip install --upgrade --upgrade-strategy eager -r "$ROOT_DIR/requirements.txt"
+
+echo "[bootstrap] Verifying environment (pip check)"
+pip check || true
 
 echo "[bootstrap] Done"
 

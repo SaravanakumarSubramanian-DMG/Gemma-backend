@@ -12,7 +12,7 @@ torchvision==0.19.1
 # Transformers ecosystem
 transformers==4.53.0
 accelerate==0.34.0
-huggingface-hub==0.24.7
+huggingface-hub
 safetensors==0.4.4
 sentencepiece
 protobuf
