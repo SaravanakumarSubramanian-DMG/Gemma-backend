@@ -12,6 +12,7 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from PIL import Image
 from .exif_utils import extract_exif_fields
+from .embeddings import get_embedding_service
 import torch
 # Force eager execution by default; avoid TorchDynamo compilation paths
 try:
@@ -589,6 +590,7 @@ if HF_TOKEN:
 
 _scorer = GemmaScorer()
 _active_vlm_label = MODEL_ID
+_embed_service = get_embedding_service()
 
 
 # Async wrappers to guard generations and run blocking work off the event loop
@@ -642,6 +644,14 @@ async def _score_and_explain_image_image_async(
     )
 
 
+async def _embed_text_async(text: str):
+    return await asyncio.to_thread(_embed_service.embed_text, text)
+
+
+async def _embed_image_async(image: Image.Image):
+    return await asyncio.to_thread(_embed_service.embed_image, image)
+
+
 @app.get("/health")
 def health() -> Dict[str, Any]:
     return {
@@ -674,6 +684,23 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
     use_summary_flag = not bool(payload.skip_summary)
     effective_summary = payload.summary if use_summary_flag else None
 
+    # Compute job description embedding once per request
+    text_vec = None
+    text_embed_time_ms = None
+    try:
+        t0 = time.perf_counter()
+        text_vec = await _embed_text_async(payload.description or "")
+        text_embed_time_ms = int((time.perf_counter() - t0) * 1000)
+        logging.info(
+            "PY EMB_TEXT dim=%d time_ms=%s vec=%s",
+            getattr(text_vec, "shape", [0])[0],
+            str(text_embed_time_ms),
+            json.dumps(text_vec.tolist()),
+        )
+    except Exception as e:
+        logging.warning("PY EMB_TEXT_ERR %s", e)
+        text_vec = None
+
     async def score_group(items_list: List[Any], stage_label: str) -> List[Dict[str, Any]]:
         sliced = items_list[:limit] if limit else items_list
         if limit is not None and len(items_list) > limit:
@@ -686,6 +713,39 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                         f"PY IMG_START stage={stage_label} idx={idx}"
                     )
                     img, exif_info = await _load_image_and_exif_from_value_async(item)
+
+                    # Compute image embedding and cosine vs description
+                    image_vec = None
+                    image_embed_time_ms = None
+                    cosine_val = float("nan")
+                    cosine_time_ms = None
+                    try:
+                        t_img0 = time.perf_counter()
+                        image_vec = await _embed_image_async(img)
+                        image_embed_time_ms = int((time.perf_counter() - t_img0) * 1000)
+                        logging.info(
+                            "PY EMB_IMG stage=%s idx=%d dim=%d time_ms=%s vec=%s",
+                            stage_label,
+                            idx,
+                            getattr(image_vec, "shape", [0])[0],
+                            str(image_embed_time_ms),
+                            json.dumps(image_vec.tolist()),
+                        )
+                        if text_vec is not None:
+                            t_cos0 = time.perf_counter()
+                            cosine_val = _embed_service.cosine_similarity(image_vec, text_vec)
+                            cosine_time_ms = int((time.perf_counter() - t_cos0) * 1000)
+                            logging.info(
+                                "PY COS_IMG_TEXT stage=%s idx=%d val=%.6f time_ms=%s",
+                                stage_label,
+                                idx,
+                                cosine_val,
+                                str(cosine_time_ms),
+                            )
+                    except Exception as e:
+                        logging.warning(
+                            "PY EMB_IMG_ERR stage=%s idx=%d error=%s", stage_label, idx, e
+                        )
 
                     # Schedule generation tasks concurrently, guarded by semaphore
                     score_task = asyncio.create_task(
@@ -724,6 +784,19 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                             "verdict": analysis_verdict,
                         },
                     }
+                    # Provide embeddings and cosine similarity with timings
+                    if image_vec is not None:
+                        try:
+                            record["embedding"] = {
+                                "vector": image_vec.tolist(),
+                                "time_ms": image_embed_time_ms,
+                            }
+                        except Exception:
+                            pass
+                    if isinstance(cosine_val, (int, float)):
+                        record["text_image_cosine"] = float(cosine_val)
+                        if cosine_time_ms is not None:
+                            record["text_image_cosine_time_ms"] = int(cosine_time_ms)
                     if exif_info:
                         record["exif"] = exif_info
                     if vision_summary is not None:
@@ -857,6 +930,14 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
         },
         "model_analysis": model_analysis,
     }
+    if text_vec is not None:
+        try:
+            response["job_text_embedding"] = {
+                "vector": text_vec.tolist(),
+                "time_ms": text_embed_time_ms,
+            }
+        except Exception:
+            pass
     try:
         logging.info("PY SCORE_RESPONSE %s", json.dumps(response, ensure_ascii=False))
     except Exception as e:
