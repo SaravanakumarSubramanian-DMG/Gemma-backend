@@ -1,4 +1,7 @@
 import os
+# Ensure TorchDynamo/compile are disabled before importing torch/transformers
+os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
+os.environ.setdefault("PYTORCH_JIT", "0")
 import base64
 import io
 from typing import List, Dict, Any
@@ -262,8 +265,15 @@ class GemmaScorer:
             MODEL_ID,
             device_map="auto" if self._use_device_map else None,
             torch_dtype=torch.bfloat16 if self.device == "cuda" else torch.float32,
+            attn_implementation="eager",
             token=auth,
         )
+        # Double enforce eager attention on the loaded config to avoid graph-captured lookups
+        try:
+            if hasattr(self.model, "config"):
+                setattr(self.model.config, "_attn_implementation", "eager")
+        except Exception:
+            pass
 
     @torch.no_grad()
     def describe_image(self, pil_img: Image.Image) -> tuple[str, str]:
