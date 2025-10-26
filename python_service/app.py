@@ -692,19 +692,20 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
         text_vec = await _embed_text_async(payload.description or "")
         text_embed_time_ms = int((time.perf_counter() - t0) * 1000)
         logging.info(
-            "PY EMB_TEXT dim=%d time_ms=%s vec=%s",
+            "PY EMB_TEXT dim=%d time_ms=%s",
             getattr(text_vec, "shape", [0])[0],
             str(text_embed_time_ms),
-            json.dumps(text_vec.tolist()),
         )
     except Exception as e:
         logging.warning("PY EMB_TEXT_ERR %s", e)
         text_vec = None
 
-    async def score_group(items_list: List[Any], stage_label: str) -> List[Dict[str, Any]]:
+    async def score_group(items_list: List[Any], stage_label: str) -> tuple[List[Dict[str, Any]], List[Any]]:
         sliced = items_list[:limit] if limit else items_list
         if limit is not None and len(items_list) > limit:
             logging.info(f"PY GROUP_LIMIT stage={stage_label} original={len(items_list)} used={len(sliced)}")
+
+        embeddings: List[Any] = [None] * len(sliced)
 
         async def process_one(idx: int, item: Any) -> Dict[str, Any]:
             async with _task_semaphore:
@@ -723,13 +724,13 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                         t_img0 = time.perf_counter()
                         image_vec = await _embed_image_async(img)
                         image_embed_time_ms = int((time.perf_counter() - t_img0) * 1000)
+                        embeddings[idx] = image_vec
                         logging.info(
-                            "PY EMB_IMG stage=%s idx=%d dim=%d time_ms=%s vec=%s",
+                            "PY EMB_IMG stage=%s idx=%d dim=%d time_ms=%s",
                             stage_label,
                             idx,
                             getattr(image_vec, "shape", [0])[0],
                             str(image_embed_time_ms),
-                            json.dumps(image_vec.tolist()),
                         )
                         if text_vec is not None:
                             t_cos0 = time.perf_counter()
@@ -784,19 +785,22 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                             "verdict": analysis_verdict,
                         },
                     }
-                    # Provide embeddings and cosine similarity with timings
-                    if image_vec is not None:
-                        try:
-                            record["embedding"] = {
-                                "vector": image_vec.tolist(),
-                                "time_ms": image_embed_time_ms,
-                            }
-                        except Exception:
-                            pass
+                    # Provide cosine similarity with timings and derived relevancy
                     if isinstance(cosine_val, (int, float)):
                         record["text_image_cosine"] = float(cosine_val)
                         if cosine_time_ms is not None:
                             record["text_image_cosine_time_ms"] = int(cosine_time_ms)
+                        # Map cosine [-1,1] -> [0,100]
+                        relevancy_score = float(max(0.0, min(100.0, (cosine_val + 1.0) * 50.0)))
+                        # Simple heuristic thresholds
+                        if cosine_val >= 0.30:
+                            relevancy_verdict = "Relevant"
+                        elif cosine_val >= 0.20:
+                            relevancy_verdict = "Partially"
+                        else:
+                            relevancy_verdict = "Irrelevant"
+                        record["embedding_relevancy_score"] = relevancy_score
+                        record["embedding_relevancy_verdict"] = relevancy_verdict
                     if exif_info:
                         record["exif"] = exif_info
                     if vision_summary is not None:
@@ -817,13 +821,17 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                     return {"error": str(e)}
 
         tasks = [process_one(idx, item) for idx, item in enumerate(sliced)]
-        return await asyncio.gather(*tasks)
+        records = await asyncio.gather(*tasks)
+        return records, embeddings
 
-    before_res, during_res, after_res = await asyncio.gather(
+    before_pair, during_pair, after_pair = await asyncio.gather(
         score_group(payload.images.before, "before"),
         score_group(payload.images.during, "during"),
         score_group(payload.images.after, "after"),
     )
+    before_res, before_embeds = before_pair
+    during_res, during_embeds = during_pair
+    after_res, after_embeds = after_pair
     groups = {
         "before": list(before_res),
         "during": list(during_res),
@@ -882,6 +890,25 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
     before_during = just_scores(before_vs_during_details)
     before_after = just_scores(before_vs_after_details)
 
+    # Embedding-based pairwise similarities (before vs during/after)
+    def cosine_matrix(a_vecs: List[Any], b_vecs: List[Any]) -> List[List[float]]:
+        out: List[List[float]] = []
+        for va in a_vecs:
+            row: List[float] = []
+            for vb in b_vecs:
+                if va is None or vb is None:
+                    row.append(float("nan"))
+                else:
+                    try:
+                        row.append(float(_embed_service.cosine_similarity(va, vb)))
+                    except Exception:
+                        row.append(float("nan"))
+            out.append(row)
+        return out
+
+    embedding_before_during = cosine_matrix(before_embeds, during_embeds)
+    embedding_before_after = cosine_matrix(before_embeds, after_embeds)
+
     # Aggregate relevancy summaries
     def summarize_scores(items: List[Dict[str, Any]]) -> Dict[str, Any]:
         vals = [x.get("text_relevancy") for x in items if isinstance(x.get("text_relevancy"), (int, float))]
@@ -928,16 +955,14 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
             "before_vs_during": before_vs_during_details,
             "before_vs_after": before_vs_after_details,
         },
+        "embedding_image_pair_similarity": {
+            "before_vs_during": embedding_before_during,
+            "before_vs_after": embedding_before_after,
+        },
         "model_analysis": model_analysis,
     }
-    if text_vec is not None:
-        try:
-            response["job_text_embedding"] = {
-                "vector": text_vec.tolist(),
-                "time_ms": text_embed_time_ms,
-            }
-        except Exception:
-            pass
+    if text_embed_time_ms is not None:
+        response["job_text_embedding_time_ms"] = int(text_embed_time_ms)
     try:
         logging.info("PY SCORE_RESPONSE %s", json.dumps(response, ensure_ascii=False))
     except Exception as e:
