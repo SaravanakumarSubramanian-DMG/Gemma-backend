@@ -822,6 +822,10 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                     image_embed_time_ms = None
                     cosine_val = float("nan")
                     cosine_time_ms = None
+                    # Stage-specific cosine vs generated stage text embedding
+                    stage_cosine_val = float("nan")
+                    stage_cosine_time_ms = None
+                    stage_sidx: int | None = None
                     try:
                         t_img0 = time.perf_counter()
                         image_vec = await _embed_image_async(img)
@@ -863,6 +867,32 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                                     stage_pred,
                                     stage_probs_map,
                                 )
+                                # Also compute cosine against the current stage's text embedding for tighter relevance
+                                try:
+                                    stage_index_map = {"before": 0, "during": 1, "after": 2}
+                                    if stage_label in stage_index_map:
+                                        sidx = stage_index_map[stage_label]
+                                        stage_sidx = sidx
+                                        # Handle both numpy arrays and list-like containers
+                                        stage_vec = stage_text_vecs[sidx] if hasattr(stage_text_vecs, "__getitem__") else None
+                                        if stage_vec is not None:
+                                            t_scos0 = time.perf_counter()
+                                            stage_cosine_val = _embed_service.cosine_similarity(image_vec, stage_vec)
+                                            stage_cosine_time_ms = int((time.perf_counter() - t_scos0) * 1000)
+                                            logging.info(
+                                                "PY COS_IMG_STAGE_TEXT stage=%s idx=%d val=%.6f time_ms=%s",
+                                                stage_label,
+                                                idx,
+                                                stage_cosine_val,
+                                                str(stage_cosine_time_ms),
+                                            )
+                                except Exception as scse:
+                                    logging.warning(
+                                        "PY COS_IMG_STAGE_TEXT_ERR stage=%s idx=%d %s",
+                                        stage_label,
+                                        idx,
+                                        scse,
+                                    )
                             except Exception as se:
                                 logging.warning("PY STAGE_PROBS_ERR stage=%s idx=%d %s", stage_label, idx, se)
                     except Exception as e:
@@ -941,6 +971,19 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                         relevancy_verdict = _embedding_verdict_for_cosine(cosine_val)
                         record["embedding_relevancy_score"] = relevancy_score
                         record["embedding_relevancy_verdict"] = relevancy_verdict
+                    # Add stage-specific cosine similarity vs stage text embedding (if available)
+                    if isinstance(stage_cosine_val, (int, float)) and math.isfinite(float(stage_cosine_val)):
+                        record["stage_text_image_cosine"] = float(stage_cosine_val)
+                        if stage_cosine_time_ms is not None:
+                            record["stage_text_image_cosine_time_ms"] = int(stage_cosine_time_ms)
+                        stage_relevancy_score = float(max(0.0, min(100.0, (stage_cosine_val + 1.0) * 50.0)))
+                        stage_relevancy_verdict = _embedding_verdict_for_cosine(stage_cosine_val)
+                        record["stage_embedding_relevancy_score"] = stage_relevancy_score
+                        record["stage_embedding_relevancy_verdict"] = stage_relevancy_verdict
+                        # Attach the exact stage prompt text used for this comparison
+                        if (stage_sidx is not None) and (stage_prompts is not None) and (len(stage_prompts) > stage_sidx):
+                            record["stage_text_prompt"] = stage_prompts[stage_sidx]
+                            record["stage_text_prompt_index"] = int(stage_sidx)
                     # Attach text-text cosine (description vs vision_summary) if computed
                     if isinstance(text_text_cosine, (int, float)) and math.isfinite(float(text_text_cosine)):
                         record["text_text_cosine"] = float(text_text_cosine)
@@ -949,6 +992,9 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                         # Parity/blended signal between image-text and text-text cosines
                         parity = _compute_cosine_parity(cosine_val, text_text_cosine)
                         record["cosine_parity"] = parity
+                        # Parity using stage-specific cosine (if present)
+                        if isinstance(stage_cosine_val, (int, float)) and math.isfinite(float(stage_cosine_val)):
+                            record["stage_cosine_parity"] = _compute_cosine_parity(stage_cosine_val, text_text_cosine)
                     # Attach stage probabilities/prediction if computed
                     if stage_probs_map is not None:
                         record["stage_probabilities"] = stage_probs_map
