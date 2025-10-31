@@ -6,6 +6,7 @@ import base64
 import io
 from typing import List, Dict, Any
 import math
+import numpy as np
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, Request
@@ -687,6 +688,9 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
     # Compute job description embedding once per request
     text_vec = None
     text_embed_time_ms = None
+    stage_prompts: List[str] | None = None
+    stage_text_vecs = None
+    stage_text_embed_time_ms = None
     try:
         t0 = time.perf_counter()
         text_vec = await _embed_text_async(payload.description or "")
@@ -699,6 +703,24 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
     except Exception as e:
         logging.warning("PY EMB_TEXT_ERR %s", e)
         text_vec = None
+
+    # Build stage prompts and their embeddings once per request
+    try:
+        stage_prompts = _embed_service.build_stage_prompts(payload.description or "")
+        t0s = time.perf_counter()
+        stage_text_vecs = await asyncio.to_thread(_embed_service.embed_texts, stage_prompts)
+        stage_text_embed_time_ms = int((time.perf_counter() - t0s) * 1000)
+        logging.info(
+            "PY STAGE_EMB count=%d dim=%d time_ms=%s prompts=%s",
+            len(stage_prompts),
+            getattr(stage_text_vecs, "shape", [0, 0])[1] if hasattr(stage_text_vecs, "shape") else 0,
+            str(stage_text_embed_time_ms),
+            stage_prompts,
+        )
+    except Exception as e:
+        logging.warning("PY STAGE_EMB_ERR %s", e)
+        stage_prompts = None
+        stage_text_vecs = None
 
     async def score_group(items_list: List[Any], stage_label: str) -> tuple[List[Dict[str, Any]], List[Any]]:
         sliced = items_list[:limit] if limit else items_list
@@ -743,6 +765,26 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                                 cosine_val,
                                 str(cosine_time_ms),
                             )
+                        # Stage probability scoring via stage prompts (if available)
+                        stage_probs_map = None
+                        stage_pred = None
+                        if stage_text_vecs is not None and image_vec is not None and hasattr(image_vec, "shape"):
+                            try:
+                                probs = _embed_service.stage_probabilities_for_images(
+                                    np.expand_dims(image_vec, axis=0), stage_text_vecs
+                                )[0]
+                                labels = ["before", "during", "after"]
+                                stage_probs_map = {labels[i]: float(probs[i]) for i in range(min(3, len(probs)))}
+                                stage_pred = labels[int(np.argmax(probs[:3]))]
+                                logging.info(
+                                    "PY STAGE_PROBS stage=%s idx=%d pred=%s probs=%s",
+                                    stage_label,
+                                    idx,
+                                    stage_pred,
+                                    stage_probs_map,
+                                )
+                            except Exception as se:
+                                logging.warning("PY STAGE_PROBS_ERR stage=%s idx=%d %s", stage_label, idx, se)
                     except Exception as e:
                         logging.warning(
                             "PY EMB_IMG_ERR stage=%s idx=%d error=%s", stage_label, idx, e
@@ -801,6 +843,11 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                             relevancy_verdict = "Irrelevant"
                         record["embedding_relevancy_score"] = relevancy_score
                         record["embedding_relevancy_verdict"] = relevancy_verdict
+                    # Attach stage probabilities/prediction if computed
+                    if stage_probs_map is not None:
+                        record["stage_probabilities"] = stage_probs_map
+                    if stage_pred is not None:
+                        record["stage_prediction"] = stage_pred
                     if exif_info:
                         record["exif"] = exif_info
                     if vision_summary is not None:
@@ -942,6 +989,15 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
             "description": payload.description,
             "summary": payload.summary,
         },
+        "stage_prompts": (
+            {
+                "before": stage_prompts[0],
+                "during": stage_prompts[1],
+                "after": stage_prompts[2],
+            }
+            if stage_prompts is not None and len(stage_prompts) >= 3
+            else None
+        ),
         "groups": groups,
         "relevancy_summary": {
             "per_group": relevancy_summary,
@@ -963,6 +1019,8 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
     }
     if text_embed_time_ms is not None:
         response["job_text_embedding_time_ms"] = int(text_embed_time_ms)
+    if stage_text_embed_time_ms is not None:
+        response["stage_text_embedding_time_ms"] = int(stage_text_embed_time_ms)
     try:
         logging.info("PY SCORE_RESPONSE %s", json.dumps(response, ensure_ascii=False))
     except Exception as e:

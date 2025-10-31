@@ -28,10 +28,11 @@ def _dms_to_degrees(dms: Any, ref: str | None) -> float | None:
 
 
 def extract_exif_fields(img: Image.Image) -> Dict[str, Any]:
-    """Extract only GPS data, timestamp, and user comments from EXIF.
-    Returns a dict with optional keys: gps {lat, lon}, timestamp, userComments.
+    """Extract GPS data (lat/lon), timestamp, and user comments from EXIF.
+    Returns a dict with keys: gps (or None), timestamp (or None), userComments (or None).
     """
-    result: Dict[str, Any] = {}
+    # Initialize with explicit keys so downstream always sees consistent structure
+    result: Dict[str, Any] = {"gps": None, "timestamp": None, "userComments": None}
     try:
         raw = None
         try:
@@ -57,11 +58,11 @@ def extract_exif_fields(img: Image.Image) -> Dict[str, Any]:
 
         # User comment (note: often bytes, may need decoding)
         user_cmt = None
-        if 37510 in raw:  # UserComment
+        # Prefer EXIF UserComment (37510)
+        if 37510 in raw:
             val = raw.get(37510)
             try:
                 if isinstance(val, (bytes, bytearray)):
-                    # EXIF user comment may start with an 8-byte charset code like ASCII\x00\x00\x00
                     prefixes = [b"ASCII\x00\x00\x00", b"UNICODE\x00", b"JIS\x00\x00\x00"]
                     b = bytes(val)
                     for p in prefixes:
@@ -73,6 +74,29 @@ def extract_exif_fields(img: Image.Image) -> Dict[str, Any]:
                     user_cmt = str(val).strip() or None
             except Exception:
                 user_cmt = None
+        # Fallback to ImageDescription (270)
+        if not user_cmt and 270 in raw:
+            try:
+                val270 = raw.get(270)
+                if isinstance(val270, (bytes, bytearray)):
+                    user_cmt = bytes(val270).decode("utf-8", errors="ignore").strip() or None
+                else:
+                    user_cmt = str(val270).strip() or None
+            except Exception:
+                pass
+        # Fallback to XPComment (40092) - often UTF-16LE and may be a list of ints
+        if not user_cmt and 40092 in raw:
+            try:
+                v = raw.get(40092)
+                if isinstance(v, (bytes, bytearray)):
+                    user_cmt = bytes(v).decode("utf-16le", errors="ignore").rstrip("\x00").strip() or None
+                elif isinstance(v, (list, tuple)):
+                    b = bytes(int(x) & 0xFF for x in v)
+                    user_cmt = b.decode("utf-16le", errors="ignore").rstrip("\x00").strip() or None
+                else:
+                    user_cmt = str(v).strip() or None
+            except Exception:
+                pass
         if user_cmt:
             result["userComments"] = user_cmt
 
