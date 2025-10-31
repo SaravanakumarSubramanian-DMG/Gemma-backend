@@ -68,6 +68,86 @@ def _clean_chat_output(text: str) -> str:
         s = s.split("\n", 1)[-1]
     return s.strip()
 
+
+def _compute_cosine_parity(image_text_cosine: float | None, text_text_cosine: float | None) -> Dict[str, Any]:
+    """Derive a blended cosine and verdict from image-text and text-text cosines.
+
+    - Inputs are expected in [-1, 1] or NaN.
+    - Returns fields including blended cosine, 0-100 score, parity gap, and verdict.
+    """
+    def _is_num(x: Any) -> bool:
+        try:
+            return isinstance(x, (int, float)) and math.isfinite(float(x))
+        except Exception:
+            return False
+
+    itc = float(image_text_cosine) if _is_num(image_text_cosine) else float("nan")
+    ttc = float(text_text_cosine) if _is_num(text_text_cosine) else float("nan")
+
+    if math.isnan(itc) and math.isnan(ttc):
+        return {
+            "blended_cosine": float("nan"),
+            "blended_score": float("nan"),
+            "parity_gap": float("nan"),
+            "blended_verdict": "",
+        }
+
+    if math.isnan(itc):
+        blended = ttc
+    elif math.isnan(ttc):
+        blended = itc
+    else:
+        blended = 0.5 * itc + 0.5 * ttc
+
+    # Gap between the two cosine signals
+    parity_gap = abs((itc if not math.isnan(itc) else blended) - (ttc if not math.isnan(ttc) else blended))
+
+    # Map cosine [-1, 1] -> [0, 100]
+    blended_score = max(0.0, min(100.0, (blended + 1.0) * 50.0))
+
+    # Heuristic verdict using global embedding threshold configuration
+    verdict = _embedding_verdict_for_cosine(blended)
+
+    return {
+        "blended_cosine": float(blended),
+        "blended_score": float(blended_score),
+        "parity_gap": float(parity_gap),
+        "blended_verdict": verdict,
+    }
+
+
+# Embedding verdict configuration
+_EMB_VERDICT_MODE = os.environ.get("EMBED_VERDICT_MODE", "scaled").lower()  # "scaled" (Option A) or "cosine" (Option B)
+_PARTIAL_SCORE_TH = float(os.environ.get("EMBED_PARTIAL_SCORE_TH", "55"))
+_RELEVANT_SCORE_TH = float(os.environ.get("EMBED_RELEVANT_SCORE_TH", "62"))
+_PARTIAL_COS_TH = float(os.environ.get("EMBED_PARTIAL_COS_TH", "0.12"))
+_RELEVANT_COS_TH = float(os.environ.get("EMBED_RELEVANT_COS_TH", "0.22"))
+
+
+def _embedding_verdict_for_cosine(cosine_val: float) -> str:
+    """Return verdict using configured thresholds.
+
+    Modes:
+    - scaled: thresholds applied on 0–100 score scale (Option A)
+    - cosine: thresholds applied on raw cosine (Option B)
+    """
+    if not isinstance(cosine_val, (int, float)) or not math.isfinite(float(cosine_val)):
+        return ""
+    if _EMB_VERDICT_MODE == "scaled":
+        score = (float(cosine_val) + 1.0) * 50.0
+        if score >= _RELEVANT_SCORE_TH:
+            return "Relevant"
+        if score >= _PARTIAL_SCORE_TH:
+            return "Partially"
+        return "Irrelevant"
+    # Default to cosine thresholds
+    val = float(cosine_val)
+    if val >= _RELEVANT_COS_TH:
+        return "Relevant"
+    if val >= _PARTIAL_COS_TH:
+        return "Partially"
+    return "Irrelevant"
+
 def _combine_images_side_by_side(pil_a: Image.Image, pil_b: Image.Image) -> Image.Image:
     """Create a single image by placing A and B side-by-side with matched heights.
     Maintains aspect ratio for both, pads to white background if needed.
@@ -819,6 +899,29 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                     raw_vision_summary = None
                     if describe_task is not None:
                         vision_summary, raw_vision_summary = await describe_task
+                    # Compute text-text cosine between job description and vision summary (if available)
+                    text_text_cosine = float("nan")
+                    text_text_cosine_time_ms = None
+                    if (vision_summary is not None) and isinstance(vision_summary, str) and vision_summary.strip() and (text_vec is not None):
+                        try:
+                            t_tt0 = time.perf_counter()
+                            vs_vec = await _embed_text_async(vision_summary)
+                            text_text_cosine = _embed_service.cosine_similarity(vs_vec, text_vec)
+                            text_text_cosine_time_ms = int((time.perf_counter() - t_tt0) * 1000)
+                            logging.info(
+                                "PY COS_TXT_TXT stage=%s idx=%d val=%.6f time_ms=%s",
+                                stage_label,
+                                idx,
+                                text_text_cosine,
+                                str(text_text_cosine_time_ms),
+                            )
+                        except Exception as e:
+                            logging.warning(
+                                "PY COS_TXT_TXT_ERR stage=%s idx=%d error=%s",
+                                stage_label,
+                                idx,
+                                e,
+                            )
 
                     record: Dict[str, Any] = {
                         "text_relevancy": text_relevancy,
@@ -834,15 +937,18 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
                             record["text_image_cosine_time_ms"] = int(cosine_time_ms)
                         # Map cosine [-1,1] -> [0,100]
                         relevancy_score = float(max(0.0, min(100.0, (cosine_val + 1.0) * 50.0)))
-                        # Simple heuristic thresholds
-                        if cosine_val >= 0.30:
-                            relevancy_verdict = "Relevant"
-                        elif cosine_val >= 0.20:
-                            relevancy_verdict = "Partially"
-                        else:
-                            relevancy_verdict = "Irrelevant"
+                        # Verdict using configured thresholds (Option A/B)
+                        relevancy_verdict = _embedding_verdict_for_cosine(cosine_val)
                         record["embedding_relevancy_score"] = relevancy_score
                         record["embedding_relevancy_verdict"] = relevancy_verdict
+                    # Attach text-text cosine (description vs vision_summary) if computed
+                    if isinstance(text_text_cosine, (int, float)) and math.isfinite(float(text_text_cosine)):
+                        record["text_text_cosine"] = float(text_text_cosine)
+                        if text_text_cosine_time_ms is not None:
+                            record["text_text_cosine_time_ms"] = int(text_text_cosine_time_ms)
+                        # Parity/blended signal between image-text and text-text cosines
+                        parity = _compute_cosine_parity(cosine_val, text_text_cosine)
+                        record["cosine_parity"] = parity
                     # Attach stage probabilities/prediction if computed
                     if stage_probs_map is not None:
                         record["stage_probabilities"] = stage_probs_map
@@ -983,6 +1089,46 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
         },
     }
 
+    # Calibration summaries for embedding cosines within this request
+    def _extract_numeric(items: List[Dict[str, Any]], key: str) -> List[float]:
+        out: List[float] = []
+        for it in items:
+            v = it.get(key)
+            try:
+                if isinstance(v, (int, float)) and math.isfinite(float(v)):
+                    out.append(float(v))
+            except Exception:
+                pass
+        return out
+
+    cos_before = _extract_numeric(groups["before"], "text_image_cosine")
+    cos_during = _extract_numeric(groups["during"], "text_image_cosine")
+    cos_after = _extract_numeric(groups["after"], "text_image_cosine")
+    cos_all = cos_before + cos_during + cos_after
+    def _quantiles(vals: List[float]) -> Dict[str, float]:
+        if not vals:
+            return {"p50": float("nan"), "p60": float("nan"), "p80": float("nan"), "p90": float("nan")}
+        arr = np.array(vals, dtype=np.float32)
+        return {
+            "p50": float(np.nanpercentile(arr, 50)),
+            "p60": float(np.nanpercentile(arr, 60)),
+            "p80": float(np.nanpercentile(arr, 80)),
+            "p90": float(np.nanpercentile(arr, 90)),
+        }
+    score_all = [max(0.0, min(100.0, (c + 1.0) * 50.0)) for c in cos_all]
+
+    embedding_calibration = {
+        "verdict_mode": _EMB_VERDICT_MODE,
+        "thresholds": {
+            "partial_score": _PARTIAL_SCORE_TH,
+            "relevant_score": _RELEVANT_SCORE_TH,
+            "partial_cos": _PARTIAL_COS_TH,
+            "relevant_cos": _RELEVANT_COS_TH,
+        },
+        "cosine_quantiles": _quantiles(cos_all),
+        "score_quantiles": _quantiles(score_all),
+    }
+
     response: Dict[str, Any] = {
         "model": _active_vlm_label,
         "job": {
@@ -1016,6 +1162,7 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
             "before_vs_after": embedding_before_after,
         },
         "model_analysis": model_analysis,
+        "embedding_calibration": embedding_calibration,
     }
     if text_embed_time_ms is not None:
         response["job_text_embedding_time_ms"] = int(text_embed_time_ms)
